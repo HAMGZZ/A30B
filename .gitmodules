@@ -1,0 +1,3 @@
+[submodule "lib/Adafruit_Si5351_Library"]
+	path = lib/Adafruit_Si5351_Library
+	url = git@github.com:adafruit/Adafruit_Si5351_Library.git
