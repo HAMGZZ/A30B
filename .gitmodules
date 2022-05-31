@@ -1,0 +1,3 @@
+[submodule "lib/Si5351Arduino"]
+	path = lib/Si5351Arduino
+	url = git@github.com:etherkit/Si5351Arduino.git
