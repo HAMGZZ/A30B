@@ -15,4 +15,16 @@
 #define GPS_BAUD 9600
 #define FSK_BAUD 300
 
+
+/* Virtual EEPROM LAYOUT:
+ * 0                 16       24       28
+ * |-----------------|--------|--------|
+ *    17b Callsign     8b frq   8b frq
+ * 
+ */
+#define CALLSIGN_LOC    0
+#define CALLSIGN_SIZE   17 // 16 Bytes for callsign size
+#define DEFAULT_ZERO    1012000000ULL
+#define DEFAULT_ONE     1012100000ULL
+
 #endif
