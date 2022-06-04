@@ -11,7 +11,7 @@
 #include <Wire.h>
 
 #include "defines.hpp"
-#include "Logger.hpp"
+#include "Logger/Logger.hpp"
 #include "si5351.h"
 #include "TinyGPS++.h"
 
@@ -22,7 +22,7 @@ TinyGPSPlus gps;
 void setup() 
 {
     Serial.begin();
-    delay(1000);
+    delay(10000);
     Serial.print("A30B - VK2GZZ - 2022");
 }
 
@@ -46,10 +46,10 @@ void setup1()
     Wire.setSCL(I2C_SCL);
     log.Send(INFO, "CONNECTING TO RF CHIP");
     rf_conn = rf.init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
-    if(!rf_conn)
-    {
-       log.Send(FATAL, "COULD NOT CONNECT TO RF CHIP");
-    }
+    //if(!rf_conn)
+    //{
+    //   log.Send(FATAL, "COULD NOT CONNECT TO RF CHIP");
+    //}
     log.Send(INFO, "CONNECTED TO RF CHIP");
     log.Send(INFO, "SETTING UP RF");
     // rf.set_freq(FREQ_0, SI5351_CLK0);
@@ -59,7 +59,7 @@ void setup1()
 
 
 
-    log.Send(INFO, "STARTING UART PINS > ", UART_TX, UART_RX);
+    //log.Send(INFO, "STARTING UART PINS > " + to_Str UART_TX, UART_RX);
     Serial1.setTX(UART_TX);
     Serial1.setRX(UART_RX);  
     Serial1.begin(GPS_BAUD);
