@@ -22,10 +22,7 @@ private:
 public:
 
     Memory();
-    // Getters from memory
-    char * GetCallsign();
-    unsigned long long GetZeroFreq();
-    unsigned long long GetOneFreq();
+    void Init();
 
     // Setters to memory
     void SetCallsign(char * callsign);

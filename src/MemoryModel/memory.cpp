@@ -3,15 +3,19 @@
 
 Memory::Memory()
 {
+
+}
+
+void Memory::Init()
+{
     log.Start("MEMORY", INFO);
     log.Send(INFO, "INITIALISING MEMORY...");
     EEPROM.begin(256);
     log.Send(INFO, "GETTING CALLSIGN");
     pullString(callsign, sizeof(callsign));
-    //log.Send(INFO, "GOT CALLSIGN > ", callsign);
+    log.Send(INFO, "GOT CALLSIGN > ", callsign);
     log.Send(INFO, "GETTING ZERO FREQUENCY");
     EEPROM.get(CALLSIGN_LOC, zeroFreq);
-    //log.Send(INFO, "GOT ")
     log.Send(INFO, "GETTING ONE FREQUENCY");
     EEPROM.get(CALLSIGN_LOC + sizeof(unsigned long long), oneFreq);
     if( ((zeroFreq < 900000000ULL) || (oneFreq < 900000000ULL)) || 
@@ -24,7 +28,6 @@ Memory::Memory()
         log.Send(INFO, "0 & 1 FREQ RESET");
         saveData();
     }
-
 }
 
 void Memory::pullString(char * buffer, int size, int startLoc)
@@ -52,7 +55,7 @@ void Memory::writeString(char * buffer, int startLoc)
 
 void Memory::SetCallsign(char * callsign)
 {
-    //log.Send(INFO, "WRITTING CALLSIGN > ", callsign);
+    log.Send(INFO, "WRITTING CALLSIGN > ", callsign);
     writeString(callsign, CALLSIGN_LOC);
 }
 

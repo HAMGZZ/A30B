@@ -14,16 +14,20 @@
 #include "Logger/Logger.hpp"
 #include "si5351.h"
 #include "TinyGPS++.h"
+#include "MemoryModel/memory.hpp"
 
 Si5351 rf;
 TinyGPSPlus gps;
+Memory memory;
 
 // CORE 0 Responsible for Serial prompt.
 void setup() 
 {
+    rp2040.idleOtherCore();
     Serial.begin();
     delay(10000);
-    Serial.print("A30B - VK2GZZ - 2022");
+    memory.Init();
+    rp2040.resumeOtherCore();
 }
 
 void loop() 
@@ -36,7 +40,7 @@ void loop()
 // CORE 1 Responsible for GPS and Shifting data.
 void setup1()
 {
-    delay(5000); // WAIT FOR CORE 1 to START
+    delay(10); // WAIT FOR CORE 1 to START
     Logger log("IOSETUP", INFO);
     
     
