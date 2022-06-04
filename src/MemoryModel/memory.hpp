@@ -2,7 +2,7 @@
 #define MEMORY_HPP
 
 #include <Arduino.h>
-#include "Logger.hpp"
+#include "Logger/Logger.hpp"
 #include "defines.hpp"
 #include <EEPROM.h>
 
