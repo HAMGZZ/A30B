@@ -15,10 +15,12 @@
 #include "si5351.h"
 #include "TinyGPS++.h"
 #include "MemoryModel/memory.hpp"
+#include "Shell/Shell.h"
 
 Si5351 rf;
 TinyGPSPlus gps;
 Memory memory;
+Shell shell;
 
 // CORE 0 Responsible for Serial prompt.
 void setup() 
@@ -27,12 +29,15 @@ void setup()
     Serial.begin();
     delay(10000);
     memory.Init();
+    shell.setPrompt("A30B >> ");
     rp2040.resumeOtherCore();
+    delay(10000);
+    shell.begin(Serial, 20);
 }
 
 void loop() 
 {
-    //SHELL
+    shell.loop();
     //HEARTBEAT
 }
 
