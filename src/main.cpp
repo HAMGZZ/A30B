@@ -27,11 +27,10 @@ void setup()
 {
     rp2040.idleOtherCore();
     Serial.begin();
-    delay(10000);
+    Serial.print("-- A30B START --");
     memory.Init();
-    shell.setPrompt("A30B >> ");
     rp2040.resumeOtherCore();
-    delay(10000);
+    shell.setPrompt("[A30B]>> ");
     shell.begin(Serial, 20);
 }
 

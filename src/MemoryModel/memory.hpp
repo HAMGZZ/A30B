@@ -11,9 +11,6 @@ class Memory
 {
 private:
     Logger log;
-    char callsign[CALLSIGN_SIZE] = {0};
-    unsigned long long zeroFreq = 0;
-    unsigned long long oneFreq = 0;
     
     void pullString(char * buffer, int size, int startLoc = 0);
     void writeString(char * buffer, int startLoc = 0);
@@ -24,6 +21,10 @@ public:
     Memory();
     void Init();
 
+    char callsign[CALLSIGN_SIZE] = {0};
+    unsigned long long zeroFreq = 0;
+    unsigned long long oneFreq = 0;
+    
     // Setters to memory
     void SetCallsign(char * callsign);
     void SetZeroFreq(unsigned long long freq);
