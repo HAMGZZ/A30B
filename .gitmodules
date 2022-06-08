@@ -4,3 +4,6 @@
 [submodule "lib/TinyGPSPlus"]
 	path = lib/TinyGPSPlus
 	url = git@github.com:mikalhart/TinyGPSPlus.git
+[submodule "lib/LibAPRS"]
+	path = lib/LibAPRS
+	url = git@github.com:markqvist/LibAPRS.git
