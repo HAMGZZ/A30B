@@ -10,7 +10,8 @@
 #define UART_RX 29
 #define TX_EN 24
 #define D_OUT 25
-#define HB 23
+
+#define HB_LED 23
 
 #define GPS_BAUD 9600
 #define FSK_BAUD 300

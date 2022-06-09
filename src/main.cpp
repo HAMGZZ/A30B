@@ -41,22 +41,92 @@ SOFTWARE.
 #include "TinyGPS++.h"
 #include "MemoryModel/memory.hpp"
 #include "Shell/Shell.h"
+#include "Tools/tools.hpp"
 
 Si5351 rf;
 TinyGPSPlus gps;
 Memory memory;
 Shell shell;
 
+void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
+{
+    if(argc > 2)
+    {
+        if (strcmp(argv[1], "zero") == 0)
+        {
+            if(isNumber(argv[2]))
+            {
+                //Serial.printf("Setting 0 frequency to: %lld\n", strtoull(argv[2], nullptr, 0));
+                //rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
+            }
+            else
+            {
+                Serial.printf("Error: Expected number, got: %s\n", argv[2]);
+            }
+        }
+
+        else if (strcmp(argv[1], "one") == 0)
+        {
+            if(isNumber(argv[2]))
+            {
+                //Serial.printf("Setting 1 frequency to: %lld\n", strtoull(argv[2], nullptr, 0));
+                //rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
+            }
+            else
+            {
+                Serial.printf("Error: Expected number, got: %s\n", argv[2]);
+            }
+        }
+
+        else if((strcmp(argv[1], "callsign") == 0))
+        {
+            memory.SetCallsign(argv[2]);
+        }
+
+        else
+        {
+            Serial.printf("Unknown set command: %s \n", argv[1]);
+        }
+    }
+}
+
+
+void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
+{
+    currentTime = millis();
+    Serial.printf("A30B Version %lf -- Lewis Hamilton VK2GZZ June 2022\n", VERSION);
+    Serial.printf("STATUS>> \n");
+    Serial.printf("-\tCallsign:\t%s", memory.callsign);
+    Serial.printf("-\tUpTime:\t%lus > %lum", currentTime/1000, currentTime/60000);
+    Serial.printf("-\tLONG:\t %lf", -33.233);
+    Serial.printf("-\tLAT:\t %lf", 151.234);
+}
+
+
+ShellCommand(set,   "set [option] [value] \n"
+                    "-> 'set zero 1012000000' sets the zero mark to 10.120,000,00 MHz\n"
+                    "-> 'set one 1012100000' sets the one mark to 10.121,000,00 MHz\n"
+                    "-> 'set callsign *****' sets the callsign - can be up to 7 chars\n"
+                    "-> 'set icon **' sets the APRS icon to be transmitted", cmdSet);
+
+ShellCommand(status, "status -> Gives overall status of the system", cmdStatus);
+
 // CORE 0 Responsible for Serial prompt.
 void setup() 
 {
     rp2040.idleOtherCore();
+    delay(10000);
     Serial.begin();
     Serial.print("-- A30B START --");
-
+    Serial.print("\n"
+                "   ___   ____ ___  ___ \n"
+                "  / _ | |_  // _ \\/ _ )\n"
+                " / __ |_/_ </ // / _  |\n"
+                "/_/ |_/____/\\___/____/ \n\n");
     memory.Init();
     rp2040.resumeOtherCore();
-    shell.setPrompt("[A30B]>> ");
+    delay(500);
+    shell.setPrompt("(A30B) $ ");
     shell.begin(Serial, 20);
 }
 
@@ -72,8 +142,6 @@ void setup1()
 {
     delay(10); // WAIT FOR CORE 1 to START
     Logger log("IOSETUP", INFO);
-    
-    
     bool rf_conn;
     log.Send(INFO, "SETTING I2C PINS > ", I2C_SDA, I2C_SCL);
     Wire.setSDA(I2C_SDA);
@@ -107,6 +175,7 @@ void loop1()
     {
         while(Serial1.available() > 0)
             gps.encode(Serial1.read());
+
         
     }
 }

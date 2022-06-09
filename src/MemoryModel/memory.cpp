@@ -44,30 +44,31 @@ void Memory::saveData()
     log.Send(INFO, "MEMORY SAVED");
 }
 
-void Memory::writeString(char * buffer, int startLoc)
+void Memory::writeString(const char * buffer, int startLoc)
 {
     for (int i = CALLSIGN_LOC; i < sizeof(buffer); i++)
     {
         EEPROM.write(i, buffer[i]);
     }
+    EEPROM.write(sizeof(buffer) + 1, '\0');
     saveData();
 }
 
-void Memory::SetCallsign(char * callsign)
+void Memory::SetCallsign( const char * callsign)
 {
-    log.Send(INFO, "WRITTING CALLSIGN > ", callsign);
+    log.Send(DEBUG, "WRITTING CALLSIGN > ", callsign);
     writeString(callsign, CALLSIGN_LOC);
 }
 
 void Memory::SetZeroFreq(unsigned long long freq)
 {
-    //log.Send(INFO, "WRITTING ZERO FREQ > ", freq);
+    log.Send(DEBUG, "WRITTING ZERO FREQ > ", freq);
     EEPROM.put(CALLSIGN_LOC, freq);
 }
 
 void Memory::SetOneFreq(unsigned long long freq)
 {
 
-    //log.Send(INFO, "WRITTING ONE FREQ > ", freq);
+    log.Send(DEBUG, "WRITTING ONE FREQ > ", freq);
     EEPROM.put(CALLSIGN_LOC + sizeof(unsigned long long), freq);
 }

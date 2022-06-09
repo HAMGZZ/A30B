@@ -78,6 +78,21 @@ void Logger::Send(Level level, const char *message, bool var1)
     }
 }
 
+
+void Logger::Send(Level level, char const *message, unsigned long long var1)
+{
+    if(level < minLogLevel)
+        return;
+
+    Serial.printf("LOG <<%d>>[%s %0.1lf][%s][%s]::  %s %lld\n\r", millis(), PROG_NAME, VERSION, name, enum_to_string(level), message, var1);
+    
+    if(level == FATAL)
+    {
+        Serial.printf("HALTING...\r\n");
+        for(;;){}
+    }
+}
+
 void Logger::Send(Level level, char const *message, char *message2)
 {
     if(level < minLogLevel)

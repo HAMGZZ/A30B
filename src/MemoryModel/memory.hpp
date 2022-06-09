@@ -13,7 +13,7 @@ private:
     Logger log;
     
     void pullString(char * buffer, int size, int startLoc = 0);
-    void writeString(char * buffer, int startLoc = 0);
+    void writeString(const char * buffer, int startLoc = 0);
     void saveData();
 
 public:
@@ -26,7 +26,7 @@ public:
     unsigned long long oneFreq = 0;
     
     // Setters to memory
-    void SetCallsign(char * callsign);
+    void SetCallsign(const char * callsign);
     void SetZeroFreq(unsigned long long freq);
     void SetOneFreq(unsigned long long freq);
 };
