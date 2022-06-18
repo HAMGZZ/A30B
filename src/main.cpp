@@ -42,11 +42,13 @@ SOFTWARE.
 #include "MemoryModel/memory.hpp"
 #include "Shell/Shell.h"
 #include "Tools/tools.hpp"
+#include "ax25/ax25.hpp"
 
 Si5351 rf;
 TinyGPSPlus gps;
 Memory memory;
 Shell shell;
+AX25 ax25;
 
 void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
 {
@@ -54,27 +56,27 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
     {
         if (strcmp(argv[1], "zero") == 0)
         {
-            if(isNumber(argv[2]))
+            if(Tools::IsNumber(argv[2]))
             {
-                //Serial.printf("Setting 0 frequency to: %lld\n", strtoull(argv[2], nullptr, 0));
+                //Serial.printf("Setting 0 frequency to: %lld\n\r", strtoull(argv[2], nullptr, 0));
                 //rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
             }
             else
             {
-                Serial.printf("Error: Expected number, got: %s\n", argv[2]);
+                Serial.printf("Error: Expected number, got: %s\n\r", argv[2]);
             }
         }
 
         else if (strcmp(argv[1], "one") == 0)
         {
-            if(isNumber(argv[2]))
+            if(Tools::IsNumber(argv[2]))
             {
-                //Serial.printf("Setting 1 frequency to: %lld\n", strtoull(argv[2], nullptr, 0));
+                //Serial.printf("Setting 1 frequency to: %lld\n\r", strtoull(argv[2], nullptr, 0));
                 //rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
             }
             else
             {
-                Serial.printf("Error: Expected number, got: %s\n", argv[2]);
+                Serial.printf("Error: Expected number, got: %s\n\r", argv[2]);
             }
         }
 
@@ -85,44 +87,94 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
 
         else
         {
-            Serial.printf("Unknown set command: %s \n", argv[1]);
+            Serial.printf("Unknown set command: %s \n\r", argv[1]);
         }
+    }
+    else
+    {
+        Serial.printf("Error, no set verb.\n\r");
     }
 }
 
 
 void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
 {
-    currentTime = millis();
-    Serial.printf("A30B Version %lf -- Lewis Hamilton VK2GZZ June 2022\n", VERSION);
-    Serial.printf("STATUS>> \n");
-    Serial.printf("-\tCallsign:\t%s", memory.callsign);
-    Serial.printf("-\tUpTime:\t%lus > %lum", currentTime/1000, currentTime/60000);
-    Serial.printf("-\tLONG:\t %lf", -33.233);
-    Serial.printf("-\tLAT:\t %lf", 151.234);
+    long currentTime = millis();
+    Serial.printf("A30B Version %0.1f -- Lewis Hamilton VK2GZZ June 2022\n\r", VERSION);
+    Serial.printf("STATUS>> \n\r");
+    Serial.printf("-\tCallsign:\t %s\r\n", memory.callsign);
+    Serial.printf("-\tUpTime:\t\t %lus > %lum\r\n", (long)(currentTime/1000), (long)(currentTime/60000));
+    Serial.printf("-\tLONG:\t\t %lf\r\n", -33.233);
+    Serial.printf("-\tLAT:\t\t %lf\r\n", 151.234);
+    Serial.printf("-\tICON #: \t %lu\r\n");
+}
+
+void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
+{
+    if(argc > 2)
+    {
+        if (strcmp(argv[1], "crc") == 0)
+        {
+            char input[1024] = {0};
+            strcpy(input, argv[2]);
+            Serial.printf("INPUT: \t\t %s\r\n", input);
+            Serial.printf("ORIGINAL:\t ");
+            for (int i = 0; i < strlen(input); i++)
+            {
+                Tools::PrintBinary(&input[i], 8);
+                Serial.printf("| ");
+            }
+            Serial.printf("\r\nFLIPPED:\t ");
+            Tools::BitFlip(input, strlen(input));
+            for (int i = 0; i < strlen(input); i++)
+            {
+                Tools::PrintBinary(&input[i], 8);
+                Serial.printf("| ");
+            }
+            unsigned long begin = micros();
+            uint16_t result = ax25.checksum(input, strlen(input));
+            unsigned long end = micros();
+            unsigned long timespend = end - begin;
+            Serial.printf("\r\nRESULT: \t 0x%04x\r\n", result);
+            Serial.printf("RESULT: \t ");
+            Tools::PrintBinary(&result, 16);
+            Serial.printf("\r\nCALC TIME:\t %lu uS\r\n", timespend);
+        }
+        else
+        {
+            Serial.printf("Unknown test command: %s \n\r", argv[1]);
+        }
+    }
+    else
+    {
+        Serial.printf("Error, no test verb.\n\r");
+    }
 }
 
 
-ShellCommand(set,   "set [option] [value] \n"
-                    "-> 'set zero 1012000000' sets the zero mark to 10.120,000,00 MHz\n"
-                    "-> 'set one 1012100000' sets the one mark to 10.121,000,00 MHz\n"
-                    "-> 'set callsign *****' sets the callsign - can be up to 7 chars\n"
-                    "-> 'set icon **' sets the APRS icon to be transmitted", cmdSet);
+ShellCommand(set,   "set [option] [value] \n\r"
+                    "\t-> 'set zero 1012000000' sets the zero mark to 10.120,000,00 MHz\n\r"
+                    "\t-> 'set one 1012100000' sets the one mark to 10.121,000,00 MHz\n\r"
+                    "\t-> 'set callsign *****' sets the callsign - can be up to 7 chars\n\r"
+                    "\t-> 'set icon ***' sets the APRS icon to be transmitted", cmdSet);
 
 ShellCommand(status, "status -> Gives overall status of the system", cmdStatus);
+
+ShellCommand(test,  "test [unit] [options] \n\r"
+                    "\t-> 'test crc 12345678' returns the CRC-CCITT result from message '12345678'", cmdTest);
 
 // CORE 0 Responsible for Serial prompt.
 void setup() 
 {
-    rp2040.idleOtherCore();
-    delay(10000);
     Serial.begin();
+    rp2040.idleOtherCore();
+    delay(5000);
     Serial.print("-- A30B START --");
-    Serial.print("\n"
-                "   ___   ____ ___  ___ \n"
-                "  / _ | |_  // _ \\/ _ )\n"
-                " / __ |_/_ </ // / _  |\n"
-                "/_/ |_/____/\\___/____/ \n\n");
+    Serial.print("\n\r"
+                "   ___   ____ ___  ___ \n\r"
+                "  / _ | |_  // _ \\/ _ )\n\r"
+                " / __ |_/_ </ // / _ |\n\r"
+                "/_/ |_/____/\\___/____/ \n\n\r");
     memory.Init();
     rp2040.resumeOtherCore();
     delay(500);
@@ -158,13 +210,10 @@ void setup1()
     // rf.set_freq(FREQ_1, SI5351_CLK1);
     pinMode(TX_EN, OUTPUT);
     pinMode(D_OUT, OUTPUT);
-
-
-
-    //log.Send(INFO, "STARTING UART PINS > " + to_Str UART_TX, UART_RX);
     Serial1.setTX(UART_TX);
     Serial1.setRX(UART_RX);  
     Serial1.begin(GPS_BAUD);
+    ax25.begin(memory.callsign, 300, 000);
 
 }
 
