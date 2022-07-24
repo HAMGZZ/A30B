@@ -2,7 +2,7 @@
 #define AX25_HPP
 
 #include <Arduino.h>
-#include "Logger/Logger.hpp"
+#include "Tools/tools.hpp"
 
 #define FLAG 0xE7
 #define CONTROL_FIELD 0x03
@@ -12,17 +12,18 @@ class AX25
 {
     private:
         char sourceAddress[8] = {0}; //7 + \n
-        char packet[332] = {0}; // Entire packet
+        char destinationAdress[8] ={'G','P','S',0,0,0};
         long baudRate = 0;
         char icon[4] = {0};
-        Logger log;
+        int txEnablePin; 
+        int dataOutPin;
     public:
         AX25();
-        AX25(char * sourceAddress, long baudRate, char * icon);
-        void begin(char * sourceAddress, long baudRate, char * icon);
+        char packet[332] = {0}; // Entire packet
+        void begin(char * sourceAddress, char * icon, long baudRate, int txEnablePin, int dataOutPin);
         uint16_t checksum(const char * data, long size);
-        void buildPacket(char * information);
-        void shiftOut(int txEnablePin, int dataOutPin);
+        void buildPacket(const char * information, bool debug = false);
+        void shiftOut();
 };
 
 #endif

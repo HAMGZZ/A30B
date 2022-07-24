@@ -5,20 +5,44 @@ AX25::AX25()
 
 }
 
-AX25::AX25(char * sourceAddress, long baudRate, char * icon)
+void AX25::begin(char * sourceAddress, char * icon, long baudRate, int txEnablePin, int dataOutPin)
 {
-    log.Start("AX25", INFO);
     strcpy(this->sourceAddress, sourceAddress);
+    strcpy(this->icon, icon);
     this->baudRate = baudRate;
-    log.Send(INFO, "AX25 Source Address -> ", this->sourceAddress);
+    this->txEnablePin = txEnablePin;
+    this->dataOutPin = dataOutPin;
 }
 
-void AX25::begin(char * sourceAddress, long baudRate, char * icon)
+void AX25::buildPacket(const char * information, bool debug)
 {
-    log.Start("AX25", INFO);
-    strcpy(this->sourceAddress, sourceAddress);
-    this->baudRate = baudRate;
-    log.Send(INFO, "AX25 Source Address -> ", this->sourceAddress);
+  memset(packet, 0, 332);
+  packet[0] = 0x7e;
+  strcat(destinationAdress, icon);
+  strcat(packet, destinationAdress);
+  strcat(packet, sourceAddress); 
+  packet[14] = 0x03;
+  packet[15] = 0xf0;
+  strcat(packet, information);
+  char subset[strlen(packet)] = {0};
+  for(int i = 1; i < strlen(packet); i++)
+  {
+    subset[i-1] = packet[i];
+  }
+  uint16_t fcs = checksum((const char*)subset, strlen(subset));
+  if(debug)
+  {
+    Serial.printf("\r\nSource address: \t%s\r\n", sourceAddress);
+    Serial.printf("Icon          : \t%s\r\n", icon);
+    Serial.printf("Dest adress   : \t%s\r\n", destinationAdress);
+    Serial.printf("Subset String : \t%s\r\n", subset);
+    Serial.printf("Calculated FCS: \t0x%04x\t", fcs);
+    Tools::PrintBinary(&fcs, 16);
+    Serial.printf("\r\n");
+  }
+  packet[strlen(packet)] = fcs & 0xff;
+  packet[strlen(packet)] = (fcs>>8) & 0xff;
+  packet[strlen(packet)] = 0x7e;
 }
 
 uint16_t AX25::checksum(const char * data, long len)
@@ -41,4 +65,20 @@ uint16_t AX25::checksum(const char * data, long len)
         }
     }
     return crc ^ 0xFFFF;
+}
+
+void AX25::shiftOut()
+{
+  unsigned long delay = (1/baudRate) * 1000000;
+  int i, ii;
+  digitalWrite(txEnablePin, 1);
+  for ( i = 0; i < strlen(packet); i++)
+  {
+    for (ii = 0; ii < 8; ii++)  
+    {
+      digitalWrite(dataOutPin, !!(1 << i));
+      delayMicroseconds(delay);
+    }
+  }
+  digitalWrite(txEnablePin, 0);
 }
