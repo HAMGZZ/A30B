@@ -261,10 +261,30 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
           unsigned long end = micros();
           unsigned long timespend = end - begin;
           ax25.buildPacket(argv[2], true);
-          Serial.printf("Built packet:\r\n");
+          Serial.printf("Built packet  :\r\n");
           Tools::DumpHex(ax25.packet, strlen(ax25.packet));
           Serial.printf("\r\nTime spent: %lu uS\r\n", timespend);
-          ax25.shiftOut();
+          Serial.printf("Do you want to transmit (y/n)? ");
+          bool run = true;
+          while(run)
+          {
+            while(Serial.available())
+            {
+              char input = Serial.read();
+              if(input == 'y')
+              {
+                Serial.printf("%c\r\nShifting out!\r\n", input);
+                ax25.shiftOut();
+                run = false;
+              }
+              else
+              {
+                Serial.printf("%c\r\n", input);
+                run = false;
+              }
+            }
+            delay(10);
+          }
         }
         
         else
