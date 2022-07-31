@@ -66,7 +66,7 @@ int ShellColour;
 
 void HeartBeat()
 {
-  if(micros() % 100 == 0)
+  if(micros() % 43 == 0)
   {
     digitalWrite(HB_LED, 1);
   }
