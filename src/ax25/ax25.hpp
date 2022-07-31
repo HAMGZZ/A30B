@@ -13,7 +13,7 @@ class AX25
     private:
         char sourceAddress[8] = {0}; //7 + \n
         char destinationAdress[8] ={'G','P','S',0,0,0};
-        long baudRate = 0;
+        unsigned long long db = 0;
         char icon[4] = {0};
         int txEnablePin; 
         int dataOutPin;

@@ -9,14 +9,15 @@ void AX25::begin(char * sourceAddress, char * icon, long baudRate, int txEnableP
 {
     strcpy(this->sourceAddress, sourceAddress);
     strcpy(this->icon, icon);
-    this->baudRate = baudRate;
     this->txEnablePin = txEnablePin;
     this->dataOutPin = dataOutPin;
+    db = 1000000/baudRate;
 }
 
 void AX25::buildPacket(const char * information, bool debug)
 {
   memset(packet, 0, 332);
+  memset(destinationAdress+3, 0, 5);
   packet[0] = 0x7e;
   strcat(destinationAdress, icon);
   strcat(packet, destinationAdress);
@@ -76,7 +77,7 @@ void AX25::shiftOut()
     for (ii = 0; ii < 8; ii++)
     {
       digitalWrite(dataOutPin, (packet[i] >> ii) & 0x01);
-      delayMicroseconds(1000000/baudRate);
+      delayMicroseconds(db);
     }
   }
   digitalWrite(txEnablePin, 0);
