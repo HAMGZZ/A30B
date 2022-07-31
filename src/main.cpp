@@ -264,7 +264,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
           Serial.printf("Built packet:\r\n");
           Tools::DumpHex(ax25.packet, strlen(ax25.packet));
           Serial.printf("\r\nTime spent: %lu uS\r\n", timespend);
-          //ax25.shiftOut();
+          ax25.shiftOut();
         }
         
         else

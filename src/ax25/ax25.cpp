@@ -20,7 +20,7 @@ void AX25::buildPacket(const char * information, bool debug)
   packet[0] = 0x7e;
   strcat(destinationAdress, icon);
   strcat(packet, destinationAdress);
-  strcat(packet, sourceAddress); 
+  strcat(packet, sourceAddress);
   packet[14] = 0x03;
   packet[15] = 0xf0;
   strcat(packet, information);
@@ -69,15 +69,14 @@ uint16_t AX25::checksum(const char * data, long len)
 
 void AX25::shiftOut()
 {
-  unsigned long delay = (1/baudRate) * 1000000;
   int i, ii;
   digitalWrite(txEnablePin, 1);
   for ( i = 0; i < strlen(packet); i++)
   {
-    for (ii = 0; ii < 8; ii++)  
+    for (ii = 0; ii < 8; ii++)
     {
-      digitalWrite(dataOutPin, !!(1 << i));
-      delayMicroseconds(delay);
+      digitalWrite(dataOutPin, (packet[i] >> ii) & 0x01);
+      delayMicroseconds(1000000/baudRate);
     }
   }
   digitalWrite(txEnablePin, 0);
