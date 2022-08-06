@@ -252,6 +252,26 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
             Serial.printf("\r\nCALC TIME:\t %lu uS\r\n", timespend);
         }
 
+        else if (strcmp(argv[1], "modulation") == 0)
+        {
+          unsigned long int del = 2500;
+          Serial.printf("Modulator tester");
+          int count = (int) strtol(argv[2], nullptr, 0);
+          Serial.printf("running for %d s");
+          count = (count * 1000) / del;
+          Serial.printf("testing modulation -> ");
+          digitalWrite(TX_EN, 1);
+          for(int i = 0; i < count; i++)
+          {
+            digitalWrite(D_OUT, i%2);
+            Serial.printf("%d", i%2);
+            delay(del);
+          }
+          digitalWrite(TX_EN, 0);
+          digitalWrite(D_OUT, 0);
+          Serial.printf("Done!\r\n");
+        }
+
         else if (strcmp(argv[1], "builder") == 0)
         {
           Serial.printf("Input: %s\r\n", argv[2]);
@@ -374,7 +394,9 @@ ShellCommand(set,   "set [option] [value] \n\r"
 ShellCommand(status, "status -> Gives overall status of the system", cmdStatus);
 
 ShellCommand(test,  "test [unit] [options] \n\r"
-                    "\t-> 'test crc 12345678' returns the CRC-CCITT result from message '12345678'", cmdTest);
+                    "\t-> 'test crc 12345678' returns the CRC-CCITT result from message '12345678'\r\n"
+                    "\t-> 'test builder testpacket' returns the build AX25 packet & allows test tx\r\n"
+                    "\t-> 'test modulation 10' modulates signal with 1's and 0's being txd for '10' seconds", cmdTest);
 
 ShellCommand(save, "save -> Saves the system configuration", cmdSave);
 
