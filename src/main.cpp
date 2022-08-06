@@ -153,7 +153,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             if(Tools::IsNumber(argv[2]))
             {
                 Serial.printf("Setting 0 frequency to: %lld\n\r", strtoull(argv[2], nullptr, 0));
-                //rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
+                rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
             }
             else
             {
@@ -166,7 +166,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             if(Tools::IsNumber(argv[2]))
             {
                 Serial.printf("Setting 1 frequency to: %lld\n\r", strtoull(argv[2], nullptr, 0));
-                //rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
+                rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
             }
             else
             {
