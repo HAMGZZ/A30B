@@ -34,7 +34,7 @@ SOFTWARE.
 #include <Arduino.h>
 #include <Wire.h>
 #include <LittleFS.h>
-#include <FreeRTOS.h>
+//#include <FreeRTOS.h>
 
 #include "Settings/Settings.hpp"
 #include "defines.hpp"
@@ -66,11 +66,12 @@ void HeartBeat()
 // CORE 0 Responsible for Serial prompt.
 void setup()
 {
+    rp2040.idleOtherCore();
     CORE1LOCK = true;
-    CORE1LOAD = false;
     CORE1READY = false;
     Serial.begin();
     pinMode(HB_LED, OUTPUT);
+
     digitalWrite(HB_LED, 1);
     delay(2000);
     Serial.print("-- A30B START --");
@@ -90,18 +91,23 @@ void setup()
     Serial.printf("\b\bOK]\r\n");
     settings.Init();
 
-    Serial.printf("Loading CORE 1...");
-    CORE1LOAD = true;
+    Serial.printf("Loading CORE 1 ...\r\n");
     
     if (settings.ShellColour == 1)
         shell.setPrompt("\033[1;36m[\033[1;32mA30B\033[1;36m] \033[1;35m$\033[m ");
     else
         shell.setPrompt("[A30B] $ ");
+
+    delay(1000);
+    rp2040.resumeOtherCore();
     
     while(!CORE1READY){}
 
+    delay(2000);
+
     CORE1LOCK = false;
-    shell.begin(Serial);
+
+    shell.begin(Serial, 15);
 }
 
 void loop()
@@ -113,19 +119,14 @@ void loop()
 
 void setup1()
 {
-    delay(10);
-    while(!CORE1LOAD){}
-
     pinMode(TX_EN, OUTPUT);
     pinMode(D_OUT, OUTPUT);
-
+    Wire.setSDA(I2C_SDA);
+    Wire.setSCL(I2C_SCL);
+   
     Serial1.setTX(UART_TX);
     Serial1.setRX(UART_RX);
     Serial1.begin(GPS_BAUD);
-
-    Wire.setSDA(I2C_SDA);
-    Wire.setSCL(I2C_SCL);
-
     Serial.printf("CONNECTING TO Si5356 ...[ ]");
 
     bool rf_conn;
@@ -142,6 +143,7 @@ void setup1()
     rf.set_freq(settings.OneFreq, SI5351_CLK1);
     Serial.printf("\b\bOK]\r\n");
     ax25.begin(settings.Callsign, settings.Icon, settings.BaudRate, TX_EN, D_OUT);
+    delay(2000);
     CORE1READY = true;
 }
 
@@ -165,6 +167,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
     if (argc > 2)
     {
         CORE1LOCK = true;
+        rp2040.idleOtherCore();
         if (strcmp(argv[1], "zero") == 0)
         {
             if (Tools::IsNumber(argv[2]))
@@ -216,6 +219,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             Serial.printf("Unknown set command: %s \n\r", argv[1]);
         }
         CORE1LOCK = false;
+        rp2040.resumeOtherCore();
     }
     else
     {
@@ -226,6 +230,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
 void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
 {
     CORE1LOCK = true;
+    rp2040.idleOtherCore();
     long currentTime = millis();
     Serial.printf("A30B Version %0.1f -- Lewis Hamilton VK2GZZ June 2022\n\r", VERSION);
     Serial.printf("STATUS>> \n\r");
@@ -236,15 +241,16 @@ void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
     Serial.printf("-\tICON #: \t %s\r\n", settings.Icon);
     Serial.printf("-\tColour: \t %d\r\n", settings.ShellColour);
     CORE1LOCK = false;
+    rp2040.resumeOtherCore();
 }
 
 void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
 {
+
+    CORE1LOCK = true;
+    rp2040.idleOtherCore();
     if (argc > 2)
     {
-        Serial.printf("STOPPING CORE1\r\n");
-        CORE1LOCK = true;
-
         if (strcmp(argv[1], "crc") == 0)
         {
             char input[1024] = {0};
@@ -329,40 +335,46 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
             }
         }
 
-        else if(strcmp(argv[1], "baud") == 0)
-        {
-            float symbolTime = (1/(float)settings.BaudRate) * 1000;
-            bool run = true;       
-            unsigned long long db = 100000/settings.BaudRate; 
-            int out = 0;   
-            Serial.printf("Current baud rate: %lu\r\n", settings.BaudRate);
-            Serial.printf("The symbol time should be: %f mS\r\n", symbolTime);
-            Serial.printf("Press 'q' to quit.\r\n");
-            digitalWrite(TX_EN, 1);
-            while (run)
-            {
-                if (Serial.available())
-                {
-                    if (Serial.read() == 'q')
-                        run = false;
-                }
-                digitalWrite(D_OUT, out);
-                out = !out;
-                delayMicroseconds(db - 2);
-            }
-            digitalWrite(TX_EN, 0);
-        }
+        
 
         else
         {
             Serial.printf("Unknown test command: %s \n\r", argv[1]);
         }
-        CORE1LOCK = false;
     }
+
+    else if(strcmp(argv[1], "baud") == 0)
+    {
+        float symbolTime = (1/(float)settings.BaudRate) * 1000;
+        bool run = true;       
+        unsigned long long db = 10000000/settings.BaudRate;
+        int out = 0;   
+        Serial.printf("Current baud rate: %lu\r\n", settings.BaudRate);
+        Serial.printf("The symbol time should be: %f mS\r\n", symbolTime);
+        Serial.printf("Press 'q' to quit.\r\n");
+        digitalWrite(TX_EN, 1);
+        while (run)
+        {
+            if (Serial.available())
+            {
+                if (Serial.read() == 'q')
+                    run = false;
+            }
+            Serial.printf("\b%d", out);
+            digitalWrite(D_OUT, out);
+            out = !out;
+            delayMicroseconds(db - 2);
+        }
+        digitalWrite(TX_EN, 0);
+    }
+
     else
     {
         Serial.printf("Error, no test verb.\n\r");
     }
+
+    CORE1LOCK = false;
+    rp2040.resumeOtherCore();
 }
 
 void cmdSave(Shell &shell, int argc, const ShellArguments &argv)
@@ -375,10 +387,12 @@ void cmdSave(Shell &shell, int argc, const ShellArguments &argv)
 void cmdLoad(Shell &shell, int argc, const ShellArguments &argv)
 {
     CORE1LOCK = true;
+    rp2040.idleOtherCore();
     Serial.printf("Loading configuration...\r\n");
     settings.Read();
     Serial.printf("Configuration loaded.\r\n");
     CORE1LOCK = false;
+    rp2040.resumeOtherCore();
 }
 
 void cmdRead(Shell &shell, int argc, const ShellArguments &argv)

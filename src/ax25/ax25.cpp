@@ -11,7 +11,7 @@ void AX25::begin(char * sourceAddress, char * icon, long baudRate, int txEnableP
     strcpy(this->icon, icon);
     this->txEnablePin = txEnablePin;
     this->dataOutPin = dataOutPin;
-    db = 1000000/baudRate;
+    db = 10000000/baudRate;
 }
 
 void AX25::buildPacket(const char * information, bool debug)
