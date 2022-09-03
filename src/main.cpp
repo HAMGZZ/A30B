@@ -31,10 +31,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <LittleFS.h>
-//#include <FreeRTOS.h>
 
 #include "Settings/Settings.hpp"
 #include "defines.hpp"
@@ -564,4 +565,4 @@ ShellCommand(rmdir, "rmdir [dirname] -> rmdir /deldir", cmdRmdir);
 
 ShellCommand(put, "put [filename] [data] -> put myFile \"This is what is being placed into file\"", cmdPut);
 
-ShellCommand(format, "format -> Formats the file system", cmdFormat);
+ShellCommand(format, "format -> Formats the file system - THIS WILL CLEAR CALIBRATION", cmdFormat);
