@@ -229,6 +229,9 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
 {
     if (argc > 2)
     {
+        Serial.printf("STOPPING CORE1\r\n");
+        CORE1LOCK = true;
+
         if (strcmp(argv[1], "crc") == 0)
         {
             char input[1024] = {0};
@@ -316,18 +319,32 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
         else if(strcmp(argv[1], "baud") == 0)
         {
             float symbolTime = (1/(float)settings.BaudRate) * 1000;
-            bool run = true;
-            
+            bool run = true;       
+            unsigned long long db = 100000/settings.BaudRate; 
+            int out = 0;   
             Serial.printf("Current baud rate: %lu\r\n", settings.BaudRate);
-            Serial.printf("The symbol time should be: %f mS\r\n", 1/settings.BaudRate);
+            Serial.printf("The symbol time should be: %f mS\r\n", symbolTime);
             Serial.printf("Press 'q' to quit.\r\n");
+            digitalWrite(TX_EN, 1);
             while (run)
+            {
+                if (Serial.available())
+                {
+                    if (Serial.read() == 'q')
+                        run = false;
+                }
+                digitalWrite(D_OUT, out);
+                out = !out;
+                delayMicroseconds(db - 2);
+            }
+            digitalWrite(TX_EN, 0);
         }
 
         else
         {
             Serial.printf("Unknown test command: %s \n\r", argv[1]);
         }
+        CORE1LOCK = false;
     }
     else
     {
@@ -422,7 +439,12 @@ void cmdFormat(Shell &shell, int argc, const ShellArguments &argv)
     Serial.printf(LittleFS.format() ? "OK\r\n" : "ERROR\r\n");
 }
 
+void cmdCalibrate(Shell &shell, int argc, const ShellArguments &argv)
+{
+}
 
+
+ShellCommand(status, "status -> Gives overall status of the system", cmdStatus);
 
 ShellCommand(set, "set [option] [value] \n\r"
                   "\t-> '** set zero 1012000000' sets the zero mark to 10.120,000,00 MHz\n\r"
@@ -433,8 +455,6 @@ ShellCommand(set, "set [option] [value] \n\r"
                   "\t-> 'set icon ***' sets the APRS icon to be transmitted\r\n"
                   "\t-> 'set colour true/false' sets the shell colour mode",
              cmdSet);
-
-ShellCommand(status, "status -> Gives overall status of the system", cmdStatus);
 
 ShellCommand(test, "test [unit] [options] \n\r"
                    "\t-> 'test crc 12345678' returns the CRC-CCITT result from message '12345678'\r\n"
