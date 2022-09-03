@@ -35,7 +35,7 @@ SOFTWARE.
 #include <Arduino.h>
 #include <Wire.h>
 #include <LittleFS.h>
-//#include <FreeRTOS.h>
+#include <FreeRTOS.h>
 
 #include "defines.hpp"
 #include "si5351.h"
