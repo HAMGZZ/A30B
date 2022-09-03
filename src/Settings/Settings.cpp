@@ -12,6 +12,7 @@ int Settings::Init()
         ZeroFreq = DEFAULT_ZERO_FREQ;
         OneFreq = DEFAULT_ONE_FREQ;
         BaudRate = DEFAULT_BAUD;
+        Offset = 0;
         TransmissionDelay = DEFAULT_TR;
         ShellColour = 1;
         Serial.printf("=== PLEASE RUN 'save' TO SAVE SETTINGS ===\r\n");
@@ -35,7 +36,7 @@ int Settings::Read()
     sscanf(in, "%s", Icon);
     memset(in, 0, MAXCHAR);
     file.readBytesUntil('\n', in, MAXCHAR);
-    sscanf(in, "%llu,%llu,%lu,%lu,%d", &ZeroFreq, &OneFreq, &BaudRate, &TransmissionDelay, &ShellColour);
+    sscanf(in, "%llu,%llu,%lu,%lu,%d,%llu,", &ZeroFreq, &OneFreq, &BaudRate, &TransmissionDelay, &ShellColour, &Offset);
     memset(in, 0, MAXCHAR);
     file.close();
     return 0;
@@ -44,7 +45,7 @@ int Settings::Read()
 int Settings::Write()
 {
     fs:File file = LittleFS.open(SETTINGS_PATH, "w");
-    file.printf("%s\n%s\n%llu,%llu,%lu,%lu,%d\n\r", Callsign, Icon, ZeroFreq, OneFreq, BaudRate, TransmissionDelay, ShellColour);
+    file.printf("%s\n%s\n%llu,%llu,%lu,%lu,%d,%llu,\n\r", Callsign, Icon, ZeroFreq, OneFreq, BaudRate, TransmissionDelay, ShellColour, Offset);
     file.close();
     return 0;
 }

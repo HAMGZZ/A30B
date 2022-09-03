@@ -17,6 +17,7 @@ public:
     char Icon[ICON_SIZE];
     unsigned long long ZeroFreq;
     unsigned long long OneFreq;
+    long long Offset;
     unsigned long BaudRate;
     unsigned long TransmissionDelay;
     bool ShellColour;
@@ -24,7 +25,6 @@ public:
     int Init();
     int Write();
     int Read();
-    int defaultConfig();
 };
 
 #endif
