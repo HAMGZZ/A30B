@@ -5,6 +5,9 @@
  * properly using the RP2040 SDK. This would involve me writing things like a
  * GPS NMEA library and the like. Something which I do not have time to do right
  * now...
+ * 
+ * This main is also too big... all the CLI commands are down the bottom
+ * and should be put into another file...
  */
 
 /*
@@ -56,6 +59,7 @@ bool CORE1LOCK;
 bool CORE1LOAD;
 bool CORE1READY;
 
+// Blinks HB light.
 void HeartBeat()
 {
     if (micros() % 43 == 0)
@@ -67,13 +71,18 @@ void HeartBeat()
 // CORE 0 Responsible for Serial prompt.
 void setup()
 {
+    // Stop CORE 1 from starting while we read settings...
     rp2040.idleOtherCore();
     CORE1LOCK = true;
     CORE1READY = false;
-    Serial.begin();
-    pinMode(HB_LED, OUTPUT);
 
+    // Start the serial terminal over USB.
+    Serial.begin();
+
+    pinMode(HB_LED, OUTPUT);
     digitalWrite(HB_LED, 1);
+    
+    // Let's just wait a bit - why the rush?
     delay(2000);
     Serial.printf("-- A30B START --\r\n");
     Serial.printf("V: %0.1f\r\n", VERSION);
@@ -84,6 +93,7 @@ void setup()
                  " / __ |_/_ </ // / _  |\n\r"
                  "/_/ |_/____/\\___/____/ \n\n\r");
 
+    // Mount the internal file system...
     Serial.printf("MOUNTING FILESYSTEM ...[ ]");
     if (!LittleFS.begin())
     {
@@ -92,27 +102,31 @@ void setup()
         Tools::HaltAll();
     }
     Serial.printf("\b\bOK]\r\n");
+
+    // Load the settings...
     settings.Init();
 
-    Serial.printf("Loading CORE 1 ...\r\n");
-    
     if (settings.ShellColour == 1)
         shell.setPrompt("\033[1;36m[\033[1;32mA30B\033[1;36m] \033[1;35m$\033[m ");
     else
         shell.setPrompt("[A30B] $ ");
 
+    // Let's the serial buf finish...
     delay(1000);
+
+    // Let's load CORE 1 now...
+    Serial.printf("Loading CORE 1 ...\r\n");
     rp2040.resumeOtherCore();
     
+    // Wait for CORE 1 to be ready, and wait for buf to be clear
     while(!CORE1READY){}
-
     delay(2000);
-
     CORE1LOCK = false;
 
     shell.begin(Serial, 15);
 }
 
+// CORE 0 - Serial shell & program runner
 void loop()
 {
     shell.loop();
@@ -120,18 +134,19 @@ void loop()
     HeartBeat();
 }
 
+// CORE 1 - responsible for tracking and transmission. 
 void setup1()
 {
     pinMode(TX_EN, OUTPUT);
     pinMode(D_OUT, OUTPUT);
     Wire.setSDA(I2C_SDA);
     Wire.setSCL(I2C_SCL);
-   
     Serial1.setTX(UART_TX);
     Serial1.setRX(UART_RX);
     Serial1.begin(GPS_BAUD);
-    Serial.printf("CONNECTING TO Si5356 ...[ ]");
 
+    // Connect to sigen chip...
+    Serial.printf("CONNECTING TO Si5356 ...[ ]");
     bool rf_conn;
     rf_conn = rf.init(SI5351_CRYSTAL_LOAD_8PF, 0, 0);
     if (!rf_conn)
@@ -141,15 +156,22 @@ void setup1()
     }
     Serial.printf("\b\bOK]\r\n");
 
+    // Set the frequencies...
     Serial.printf("INITIALISING Si5356 ...[ ]");
     rf.set_freq(settings.ZeroFreq, SI5351_CLK0);
     rf.set_freq(settings.OneFreq, SI5351_CLK1);
     Serial.printf("\b\bOK]\r\n");
+
+    // Get the AX25 gen ready...
     ax25.begin(settings.Callsign, settings.Icon, settings.BaudRate, TX_EN, D_OUT);
     delay(2000);
+
+    // We are now ready!
     CORE1READY = true;
 }
 
+// CORE 1 loop - reads gps and tx's when ready.
+// TODO: IMPLEMENT THIS!
 void loop1()
 {
     // CORE 1 LOOP LOCK 
@@ -171,6 +193,8 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
     {
         CORE1LOCK = true;
         rp2040.idleOtherCore();
+
+        // Set the zero frequency.
         if (strcmp(argv[1], "zero") == 0)
         {
             if (Tools::IsNumber(argv[2]))
@@ -184,6 +208,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             }
         }
 
+        // Set the one frequency
         else if (strcmp(argv[1], "one") == 0)
         {
             if (Tools::IsNumber(argv[2]))
@@ -197,16 +222,19 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             }
         }
 
+        // Set the callsign
         else if ((strcmp(argv[1], "callsign") == 0))
         {
             strcpy(settings.Callsign, argv[2]);
         }
 
+        // Set the APRS icon
         else if ((strcmp(argv[1], "icon") == 0))
         {
             strcpy(settings.Icon, argv[2]);
         }
 
+        // Set the terminal colour.
         else if ((strcmp(argv[1], "colour") == 0))
         {
             if ((strcmp(argv[2], "true") == 0))
@@ -249,11 +277,11 @@ void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
 
 void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
 {
-
     CORE1LOCK = true;
     rp2040.idleOtherCore();
     if (argc > 2)
     {
+        // Test the checksum gen.
         if (strcmp(argv[1], "crc") == 0)
         {
             char input[1024] = {0};
@@ -273,6 +301,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
                 Serial.printf("| ");
             }
             unsigned long begin = micros();
+            // Calc the checksum
             uint16_t result = ax25.checksum(input, strlen(input));
             unsigned long end = micros();
             unsigned long timespend = end - begin;
@@ -282,6 +311,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
             Serial.printf("\r\nCALC TIME:\t %lu uS\r\n", timespend);
         }
 
+        // Test modulation (flip between 0 and 1 TX freqs)
         else if (strcmp(argv[1], "modulation") == 0)
         {
             unsigned long int del = 2500;
@@ -302,6 +332,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
             Serial.printf("Done!\r\n");
         }
 
+        // Test the packet builder.
         else if (strcmp(argv[1], "builder") == 0)
         {
             bool run = true;
@@ -346,6 +377,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
         }
     }
 
+    // test the baud rate.
     else if(strcmp(argv[1], "baud") == 0)
     {
         float symbolTime = (1/(float)settings.BaudRate) * 1000;
@@ -381,6 +413,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
     rp2040.resumeOtherCore();
 }
 
+// Calibrate the internal clock and offset.
 void cmdCal(Shell &shell, int argc, const ShellArguments &argv)
 {
     CORE1LOCK = true;

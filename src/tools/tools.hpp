@@ -5,6 +5,8 @@
 class Tools
 {
 public:
+    
+    // Return true if it is a number.
     static bool IsNumber(const char *number)
     {
         for (size_t i = 0; number[i] != 0; i++)
@@ -15,6 +17,7 @@ public:
         return true;
     }
 
+    // Print the binary of the input.
     template <typename T>
     static void PrintBinary(T t, int len)
     {
@@ -27,6 +30,7 @@ public:
         }
     }
 
+    // Bit flip the entire input. (MSB <-> LSB)
     template <typename T>
     static void BitFlip(T t, int len)
     {
@@ -49,6 +53,7 @@ public:
             ;
     }
 
+    // Do a hex dump.
     static void DumpHex(const void *data, size_t size)
     {
         // This is not mine - taken from https://gist.github.com/ccbrown/9722406

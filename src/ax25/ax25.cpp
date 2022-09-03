@@ -7,6 +7,7 @@ AX25::AX25()
 
 void AX25::begin(char * sourceAddress, char * icon, long baudRate, int txEnablePin, int dataOutPin)
 {
+    // Load in settings
     strcpy(this->sourceAddress, sourceAddress);
     strcpy(this->icon, icon);
     this->txEnablePin = txEnablePin;
@@ -16,21 +17,37 @@ void AX25::begin(char * sourceAddress, char * icon, long baudRate, int txEnableP
 
 void AX25::buildPacket(const char * information, bool debug)
 {
+  // Let's clear contents of previous packet
   memset(packet, 0, 332);
   memset(destinationAdress+3, 0, 5);
-  packet[0] = 0x7e;
+
+  // SOF byte
+  packet[0] = FLAG;
+
+  // Add icon do dest address
   strcat(destinationAdress, icon);
+  
+  // Add dest & source address to packet
   strcat(packet, destinationAdress);
   strcat(packet, sourceAddress);
-  packet[14] = 0x03;
-  packet[15] = 0xf0;
+
+  // Control and Protocol IDs
+  packet[14] = CONTROL_FIELD;
+  packet[15] = PROTOCOL_ID;
+
+  // Let's add the payload to the packet
   strcat(packet, information);
+
+  // Let's create a subset string to use for FCS
   char subset[strlen(packet)] = {0};
   for(int i = 1; i < strlen(packet); i++)
   {
     subset[i-1] = packet[i];
   }
+
+  // Let's calculate the FCS
   uint16_t fcs = checksum((const char*)subset, strlen(subset));
+
   if(debug)
   {
     Serial.printf("\r\nSource address: \t%s\r\n", sourceAddress);
@@ -41,11 +58,16 @@ void AX25::buildPacket(const char * information, bool debug)
     Tools::PrintBinary(&fcs, 16);
     Serial.printf("\r\n");
   }
+
+  // Let's append the FCS
   packet[strlen(packet)] = fcs & 0xff;
   packet[strlen(packet)] = (fcs>>8) & 0xff;
-  packet[strlen(packet)] = 0x7e;
+
+  // EOF byte
+  packet[strlen(packet)] = FLAG;
 }
 
+// Calculate the checksum - CRC type.
 uint16_t AX25::checksum(const char * data, long len)
 {
     uint16_t crc = 0xFFFF;
@@ -68,6 +90,7 @@ uint16_t AX25::checksum(const char * data, long len)
     return crc ^ 0xFFFF;
 }
 
+// Shift the data out.
 void AX25::shiftOut()
 {
   int i, ii;
