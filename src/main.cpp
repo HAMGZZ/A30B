@@ -52,6 +52,8 @@ Settings settings;
 
 
 bool CORE1LOCK;
+bool CORE1LOAD;
+bool CORE1READY;
 
 void HeartBeat()
 {
@@ -64,6 +66,9 @@ void HeartBeat()
 // CORE 0 Responsible for Serial prompt.
 void setup()
 {
+    CORE1LOCK = true;
+    CORE1LOAD = false;
+    CORE1READY = false;
     Serial.begin();
     pinMode(HB_LED, OUTPUT);
     digitalWrite(HB_LED, 1);
@@ -85,6 +90,32 @@ void setup()
     Serial.printf("\b\bOK]\r\n");
     settings.Init();
 
+    Serial.printf("Loading CORE 1...");
+    CORE1LOAD = true;
+    
+    if (settings.ShellColour == 1)
+        shell.setPrompt("\033[1;36m[\033[1;32mA30B\033[1;36m] \033[1;35m$\033[m ");
+    else
+        shell.setPrompt("[A30B] $ ");
+    
+    while(!CORE1READY){}
+
+    CORE1LOCK = false;
+    shell.begin(Serial);
+}
+
+void loop()
+{
+    shell.loop();
+    delay(10); // Release for USB handle
+    HeartBeat();
+}
+
+void setup1()
+{
+    delay(10);
+    while(!CORE1LOAD){}
+
     pinMode(TX_EN, OUTPUT);
     pinMode(D_OUT, OUTPUT);
 
@@ -102,38 +133,16 @@ void setup()
     if (!rf_conn)
     {
         Serial.printf("\b\bERROR]\r\nCOULD NOT CONNECT TO RF CHIP!\r\n HALTING!");
-        for (;;)
-            ;
+        for (;;);
     }
     Serial.printf("\b\bOK]\r\n");
+
     Serial.printf("INITIALISING Si5356 ...[ ]");
-    rf.set_freq(settings.CentreFrequency + (settings.FrequencyShift / 2), SI5351_CLK0);
-    rf.set_freq(settings.CentreFrequency - (settings.FrequencyShift / 2), SI5351_CLK1);
+    rf.set_freq(settings.ZeroFreq, SI5351_CLK0);
+    rf.set_freq(settings.OneFreq, SI5351_CLK1);
     Serial.printf("\b\bOK]\r\n");
-
-    delay(2000);
-
-    if (settings.ShellColour == 1)
-        shell.setPrompt("\033[1;36m[\033[1;32mA30B\033[1;36m] \033[1;35m$\033[m ");
-    else
-        shell.setPrompt("[A30B] $ ");
-    shell.begin(Serial);
-}
-
-void loop()
-{
-    shell.loop();
-    delay(10); // Release for USB handle
-    HeartBeat();
-}
-
-void setup1()
-{
-    delay(3000);
-    Serial.printf("INITIALISING CORE 1 ...[ ]");
-    ax25.begin(settings.Callsign, settings.Icon, 300, TX_EN, D_OUT);
-    delay(250);
-    Serial.printf("\b\bOK]\r\n");
+    ax25.begin(settings.Callsign, settings.Icon, settings.BaudRate, TX_EN, D_OUT);
+    CORE1READY = true;
 }
 
 void loop1()
@@ -155,12 +164,13 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
 {
     if (argc > 2)
     {
+        CORE1LOCK = true;
         if (strcmp(argv[1], "zero") == 0)
         {
             if (Tools::IsNumber(argv[2]))
             {
                 Serial.printf("Setting 0 frequency to: %lld\n\r", strtoull(argv[2], nullptr, 0));
-                rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
+                settings.ZeroFreq = strtoull(argv[2], nullptr, 0);
             }
             else
             {
@@ -173,7 +183,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             if (Tools::IsNumber(argv[2]))
             {
                 Serial.printf("Setting 1 frequency to: %lld\n\r", strtoull(argv[2], nullptr, 0));
-                rf.set_freq(strtoull(argv[2], nullptr, 0), SI5351_CLK0);
+                settings.OneFreq = strtoull(argv[2], nullptr, 0);
             }
             else
             {
@@ -205,6 +215,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
         {
             Serial.printf("Unknown set command: %s \n\r", argv[1]);
         }
+        CORE1LOCK = false;
     }
     else
     {
@@ -214,6 +225,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
 
 void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
 {
+    CORE1LOCK = true;
     long currentTime = millis();
     Serial.printf("A30B Version %0.1f -- Lewis Hamilton VK2GZZ June 2022\n\r", VERSION);
     Serial.printf("STATUS>> \n\r");
@@ -223,6 +235,7 @@ void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
     Serial.printf("-\tLAT:\t\t %lf\r\n", 151.234);
     Serial.printf("-\tICON #: \t %s\r\n", settings.Icon);
     Serial.printf("-\tColour: \t %d\r\n", settings.ShellColour);
+    CORE1LOCK = false;
 }
 
 void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
@@ -448,9 +461,9 @@ ShellCommand(status, "status -> Gives overall status of the system", cmdStatus);
 
 ShellCommand(set, "set [option] [value] \n\r"
                   "\t-> '** set zero 1012000000' sets the zero mark to 10.120,000,00 MHz\n\r"
-                  "\t                         Please run \"save\", then \"load\" to apply\r\n"
+                  "\t                         Please restart the device to apply\n\r"
                   "\t-> '** set one 1012100000' sets the one mark to 10.121,000,00 MHz\n\r"
-                  "\t                         Please run \"save\", then \"load\" to apply\r\n"
+                  "\t                         Please restart the device to apply\n\r"
                   "\t-> 'set callsign *****' sets the callsign - can be up to 7 chars\n\r"
                   "\t-> 'set icon ***' sets the APRS icon to be transmitted\r\n"
                   "\t-> 'set colour true/false' sets the shell colour mode",
