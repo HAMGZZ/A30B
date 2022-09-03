@@ -1,5 +1,5 @@
-#ifndef MEMORY_HPP
-#define MEMORY_HPP
+#ifndef SETTINGS_HPP
+#define SETTINGS_HPP
 
 #include <Arduino.h>
 #include <LittleFS.h>
@@ -8,26 +8,23 @@
 
 
 
-class FileSystem
+class Settings
 {
 private: 
-    FS fs = LittleFS;
-
 public:
 
     char Callsign[CALLSIGN_SIZE];
     char Icon[ICON_SIZE];
-    unsigned long long CentreFrequency;
-    unsigned long long FrequencyShift;
+    unsigned long long ZeroFreq;
+    unsigned long long OneFreq;
     unsigned long BaudRate;
     unsigned long TransmissionDelay;
     bool ShellColour;
 
-    FileSystem();
-
-    void Init();
-    void Save();
+    int Init();
+    int Write();
     int Read();
+    int defaultConfig();
 };
 
 #endif
