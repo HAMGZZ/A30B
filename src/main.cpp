@@ -75,8 +75,10 @@ void setup()
 
     digitalWrite(HB_LED, 1);
     delay(2000);
-    Serial.print("-- A30B START --");
-    Serial.print("\n\r"
+    Serial.printf("-- A30B START --\r\n");
+    Serial.printf("V: %0.1f\r\n", VERSION);
+    Serial.printf("Type 'licence' at the prompt to show licence.\r\n");
+    Serial.printf("\n\r"
                  "   ___   ____ ___  ___ \n\r"
                  "  / _ | |_  // _ \\/ _ )\n\r"
                  " / __ |_/_ </ // / _  |\n\r"
@@ -233,7 +235,7 @@ void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
     CORE1LOCK = true;
     rp2040.idleOtherCore();
     long currentTime = millis();
-    Serial.printf("A30B Version %0.1f -- Lewis Hamilton VK2GZZ June 2022\n\r", VERSION);
+    Serial.printf("A30B Version %0.1f -- Lewis Hamilton VK2GZZ\n\r", VERSION);
     Serial.printf("STATUS>> \n\r");
     Serial.printf("-\tCallsign:\t %s\r\n", settings.Callsign);
     Serial.printf("-\tUpTime:\t\t %lus > %lum\r\n", (long)(currentTime / 1000), (long)(currentTime / 60000));
@@ -525,8 +527,29 @@ void cmdFormat(Shell &shell, int argc, const ShellArguments &argv)
     Serial.printf(LittleFS.format() ? "OK\r\n" : "ERROR\r\n");
 }
 
-void cmdCalibrate(Shell &shell, int argc, const ShellArguments &argv)
+void cmdLic(Shell &shell, int argc, const ShellArguments &argv)
 {
+    Serial.printf("MIT License\r\n"
+                  "\r\n"
+                  "Copyright (c) 2022 Lewis Hamilton\r\n"
+                  "\r\n"
+                  "Permission is hereby granted, free of charge, to any person obtaining a copy\r\n"
+                  "of this software and associated documentation files (the \"Software\"), to deal\r\n"
+                  "in the Software without restriction, including without limitation the rights\r\n"
+                  "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\r\n"
+                  "copies of the Software, and to permit persons to whom the Software is\r\n"
+                  "furnished to do so, subject to the following conditions:\r\n"
+                  "\r\n"
+                  "The above copyright notice and this permission notice shall be included in all\r\n"
+                  "copies or substantial portions of the Software.\r\n"
+                  "\r\n"
+                  "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\r\n"
+                  "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\r\n"
+                  "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\r\n"
+                  "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\r\n"
+                  "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\r\n"
+                  "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\r\n"
+                  "SOFTWARE.\r\n");
 }
 
 
@@ -566,3 +589,5 @@ ShellCommand(rmdir, "rmdir [dirname] -> rmdir /deldir", cmdRmdir);
 ShellCommand(put, "put [filename] [data] -> put myFile \"This is what is being placed into file\"", cmdPut);
 
 ShellCommand(format, "format -> Formats the file system - THIS WILL CLEAR CALIBRATION", cmdFormat);
+
+ShellCommand(licence, "licence -> show licence", cmdLic);
