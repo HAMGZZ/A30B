@@ -351,6 +351,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
         int out = 0;   
         Serial.printf("Current baud rate: %lu\r\n", settings.BaudRate);
         Serial.printf("The symbol time should be: %f mS\r\n", symbolTime);
+        Serial.printf("Transmission time/bit: %llu uS\r\n", db);
         Serial.printf("Press 'q' to quit.\r\n");
         digitalWrite(TX_EN, 1);
         while (run)
@@ -375,6 +376,63 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
 
     CORE1LOCK = false;
     rp2040.resumeOtherCore();
+}
+
+void cmdCal(Shell &shell, int argc, const ShellArguments &argv)
+{
+    CORE1LOCK = true;
+    rp2040.idleOtherCore();
+    bool run = true;
+    char a;
+    char in[MAXCHAR] = {0};
+    long long inFreq = 0;
+    long long offset = 0;
+
+    Serial.printf("=== SYSTEM CALIBRATION ===\r\n");
+    Serial.printf("THIS WILL OVERWRITE PREVIOUS CALIBRATIONS!\r\n");
+    Serial.printf("Setting output of sigen to 10MHz\r\n");
+    rf.set_freq(100000000, SI5351_CLK0);
+    Serial.printf("Please connect the output to a frequency counter.\r\n");
+    Serial.printf("Please enter in 0.01Hz accuracy. E.g. 10MHz = 1000000000\r\n");
+    Serial.printf("FREQUENCY READING => ");
+    
+    while (run)
+    {
+        if (Serial.available())
+        {
+            a = Serial.read();
+            if (a == '\r' || a == '\n' || a == ' ')
+                run = false;
+            else 
+                in[strlen(in)] = a;
+        }
+    }
+    inFreq = strtoll(in, nullptr, 0) * 100ULL;
+    offset = inFreq - 1000000000ULL;
+    Serial.printf("Entered frequency: %llu\r\n", inFreq);
+    Serial.printf("Offset: %llu\r\n", offset);
+    Serial.printf("Is this offset ok? (y/n): ");
+    run = true;
+    while (run)
+    {
+        if (Serial.available())
+        {
+            if (Serial.read() == 'y' || Serial.read() == 'Y')
+            {
+                settings.Offset = offset;
+                Serial.printf("Saving calibration...\r\n");
+                settings.Write();
+                Serial.printf("Calibration saved. Please power cycle the device!\r\n");
+                delay(2000);
+                for(;;);
+            }
+            else
+            {
+                Serial.printf("Cancled\r\n");
+                run = false;
+            }
+        }
+    }
 }
 
 void cmdSave(Shell &shell, int argc, const ShellArguments &argv)
@@ -489,6 +547,8 @@ ShellCommand(test, "test [unit] [options] \n\r"
                    "\t-> 'test modulation 10' modulates signal with 1's and 0's being txd for '10' seconds\r\n"
                    "\t=> 'test baud' test baud rate.",
              cmdTest);
+
+ShellCommand(calibrate, "calibrate -> calibrate the local oscilator offset", cmdCal);
 
 ShellCommand(save, "save -> Saves the system configuration", cmdSave);
 
