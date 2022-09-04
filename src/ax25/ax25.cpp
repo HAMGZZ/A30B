@@ -46,7 +46,6 @@ void AX25::buildPacket(const char * information, bool debug)
   if(debug)
   {
     Serial.printf("\r\nSource address: \t%s\r\n", sourceAddress);
-    Serial.printf("Icon          : \t%s\r\n", icon);
     Serial.printf("Dest adress   : \t%s\r\n", destinationAdress);
     Serial.printf("Subset String : \t%s\r\n", subset);
     Serial.printf("Calculated FCS: \t0x%04x\t", fcs);

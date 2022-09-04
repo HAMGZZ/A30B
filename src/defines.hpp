@@ -17,7 +17,8 @@
 #define GPS_BAUD 9600
 
 #define CALLSIGN_SIZE   8 // 7 Bytes for callsign size
-#define ICON_SIZE 4
+#define ICON_SIZE 2
+#define COMMENT_SIZE 27
 
 #define SETTINGS_PATH "/Settings.cfg"
 

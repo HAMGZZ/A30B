@@ -15,6 +15,7 @@ public:
 
     char Callsign[CALLSIGN_SIZE];
     char Icon[ICON_SIZE];
+    char Comment[COMMENT_SIZE];
     unsigned long long ZeroFreq;
     unsigned long long OneFreq;
     long long Offset;
