@@ -5,11 +5,10 @@ AX25::AX25()
 
 }
 
-void AX25::begin(char * sourceAddress, char * icon, long baudRate, int txEnablePin, int dataOutPin)
+void AX25::begin(char * sourceAddress, long baudRate, int txEnablePin, int dataOutPin)
 {
     // Load in settings
     strcpy(this->sourceAddress, sourceAddress);
-    strcpy(this->icon, icon);
     this->txEnablePin = txEnablePin;
     this->dataOutPin = dataOutPin;
     db = 10000000/baudRate;
@@ -19,13 +18,9 @@ void AX25::buildPacket(const char * information, bool debug)
 {
   // Let's clear contents of previous packet
   memset(packet, 0, 332);
-  memset(destinationAdress+3, 0, 5);
 
   // SOF byte
   packet[0] = FLAG;
-
-  // Add icon do dest address
-  strcat(destinationAdress, icon);
   
   // Add dest & source address to packet
   strcat(packet, destinationAdress);
