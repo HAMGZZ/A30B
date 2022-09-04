@@ -262,22 +262,33 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
         }
 
         // Set the callsign
-        else if ((strcmp(argv[1], "callsign") == 0))
+        else if (strcmp(argv[1], "callsign") == 0)
         {
-            strcpy(settings.Callsign, argv[2]);
+            if (strlen(argv[2]) > 7)
+                Serial.printf("Warning: Callsign must be less than 7 characters\r\n")
+            else
+                strcpy(settings.Callsign, argv[2]);
         }
 
         // Set the APRS icon
-        else if ((strcmp(argv[1], "icon") == 0))
+        else if (strcmp(argv[1], "icon") == 0)
         {
             if (strlen(argv[2]) > 1)
-                Serial.printf("Symbols are only 1 charecter!\r\nPlease run 'lssymbol' to list symbols\r\n");
+                Serial.printf("Warning: Symbols are only 1 character!\r\nPlease run 'lssymbol' to list symbols\r\n");
             else
                 strncpy(settings.Icon, argv[2]);
         }
 
+        else if (strcmp(argv[1], "comment") == 0)
+        {
+            if (strlen(argv[2]) > 26)
+                Serial.printf("Warning: Comment must be less than 26 characters\r\n");
+            else
+                strcpy(settings.comment, argv[2]);
+        }
+
         // Set the terminal colour.
-        else if ((strcmp(argv[1], "colour") == 0))
+        else if (strcmp(argv[1], "colour") == 0)
         {
             if ((strcmp(argv[2], "true") == 0))
                 settings.ShellColour = 1;
