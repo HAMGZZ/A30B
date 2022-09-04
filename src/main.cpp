@@ -163,7 +163,7 @@ void setup1()
     Serial.printf("\b\bOK]\r\n");
 
     // Get the AX25 gen ready...
-    ax25.begin(settings.Callsign, settings.Icon, settings.BaudRate, TX_EN, D_OUT);
+    ax25.begin(settings.Callsign, settings.BaudRate, TX_EN, D_OUT);
     delay(2000);
 
     // We are now ready!
@@ -200,7 +200,7 @@ void loop1()
                                 settings.Icon,
                                 gps.course.deg(),
                                 gps.speed.knots(),
-                                gps.altitude.fee(),
+                                gps.altitude.feet(),
                                 settings.Comment);
             ax25.buildPacket(pack);
             ax25.shiftOut();
@@ -266,7 +266,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
         else if (strcmp(argv[1], "callsign") == 0)
         {
             if (strlen(argv[2]) > 7)
-                Serial.printf("Warning: Callsign must be less than 7 characters\r\n")
+                Serial.printf("Warning: Callsign must be less than 7 characters\r\n");
             else
                 strcpy(settings.Callsign, argv[2]);
         }
@@ -277,7 +277,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             if (strlen(argv[2]) > 1)
                 Serial.printf("Warning: Symbols are only 1 character!\r\nPlease run 'lssymbol' to list symbols\r\n");
             else
-                strncpy(settings.Icon, argv[2]);
+                strcpy(settings.Icon, argv[2]);
         }
 
         else if (strcmp(argv[1], "comment") == 0)
@@ -285,7 +285,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             if (strlen(argv[2]) > 26)
                 Serial.printf("Warning: Comment must be less than 26 characters\r\n");
             else
-                strcpy(settings.comment, argv[2]);
+                strcpy(settings.Comment, argv[2]);
         }
 
         // Set the terminal colour.
@@ -481,7 +481,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
                         settings.Icon,
                         gps.course.deg(),
                         gps.speed.knots(),
-                        gps.altitude.fee(),
+                        gps.altitude.feet(),
                         settings.Comment);
         Serial.printf("%s\r\n\r\n", temp);
     }
@@ -731,8 +731,8 @@ ShellCommand(test, "test [unit] [options] \n\r"
                    "\t-> 'test crc 12345678' returns the CRC-CCITT result from message '12345678'\r\n"
                    "\t-> 'test builder testpacket' returns the build AX25 packet & allows test tx\r\n"
                    "\t-> 'test modulation 10' modulates signal with 1's and 0's being txd for '10' seconds\r\n"
-                   "\t-> 'test baud' test baud rate",
-                   "\t-> 'test gps' test gps packet gen"
+                   "\t-> 'test baud' test baud rate"
+                   "\t-> 'test gps' test gps packet gen",
              cmdTest);
 
 ShellCommand(calibrate, "calibrate -> calibrate the local oscilator offset", cmdCal);
