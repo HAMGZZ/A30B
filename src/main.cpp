@@ -584,7 +584,18 @@ void cmdFormat(Shell &shell, int argc, const ShellArguments &argv)
 
 void cmdReady(Shell &shell, int argc, const ShellArguments &argv)
 {
-    Serial.printf("OK\r\n");
+    Serial.printf("OK$\r\n");
+}
+
+void cmdLsSettings(Shell &shell, int argc, const ShellArguments & argv)
+{
+    Serial.printf(  "%s,%s,%llu,%llu,%ll,%llu$\r\n", 
+                    settings.Callsign,
+                    settings.Icon,
+                    settings.ZeroFreq,
+                    settings.OneFreq,
+                    settings.Offset,
+                    settings.BaudRate);
 }
 
 void cmdLic(Shell &shell, int argc, const ShellArguments &argv)
@@ -650,6 +661,8 @@ ShellCommand(put, "put [filename] [data] -> put myFile \"This is what is being p
 
 ShellCommand(format, "format -> Formats the file system - THIS WILL CLEAR CALIBRATION", cmdFormat);
 
-ShellCommand(ready, "ready -> returns ok - ONLY FOR AUTOMATIC CONTROLL", cmdReady);
+ShellCommand(ready, "ready -> returns ok - ONLY FOR AUTOMATIC CONTROL", cmdReady);
+
+ShellCommand(lssettings, "lssettings -> list settings - ONLY FOR AUTOMATIC CONTROL", cmdLsSettings);
 
 ShellCommand(licence, "licence -> show licence", cmdLic);
