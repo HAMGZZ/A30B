@@ -183,6 +183,21 @@ void loop1()
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*****************************************************************************
  * CLI COMMANDS BELLOW
  *****************************************************************************/
@@ -264,13 +279,20 @@ void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
     rp2040.idleOtherCore();
     long currentTime = millis();
     Serial.printf("A30B Version %0.1f -- Lewis Hamilton VK2GZZ\n\r", VERSION);
-    Serial.printf("STATUS>> \n\r");
-    Serial.printf("-\tCallsign:\t %s\r\n", settings.Callsign);
-    Serial.printf("-\tUpTime:\t\t %lus > %lum\r\n", (long)(currentTime / 1000), (long)(currentTime / 60000));
-    Serial.printf("-\tLONG:\t\t %lf\r\n", -33.233);
-    Serial.printf("-\tLAT:\t\t %lf\r\n", 151.234);
-    Serial.printf("-\tICON #: \t %s\r\n", settings.Icon);
-    Serial.printf("-\tColour: \t %d\r\n", settings.ShellColour);
+    Serial.printf("== DEV CONFG ==\n\r");
+    Serial.printf("-\tCallsign:\t\t %s\r\n", settings.Callsign);
+    Serial.printf("-\tICON #:  \t\t %s\r\n", settings.Icon);
+    Serial.printf("-\tUpTime:  \t\t %lus > %lum\r\n", (long)(currentTime / 1000), (long)(currentTime / 60000));
+    Serial.printf("-\tColour:  \t\t %d\r\n", settings.ShellColour);
+    Serial.printf("== GPS STATS ==\r\n");
+    Serial.printf("-\tLONG:    \t\t %lf E\r\n", gps.location.lng());
+    Serial.printf("-\tLAT:     \t\t %lf N\r\n", gps.location.lat());
+    Serial.printf("-\tTIME:    \t\t %lf cs\r\n", gps.time.centisecond());
+    Serial.printf("-\tSPEED:   \t\t %lf km/h\r\n", gps.speed.kmph());
+    Serial.printf("-\tALT:     \t\t %lf m\r\n", gps.altitude.meters());
+    Serial.printf("== X25 STATS ==\r\n");
+    Serial.printf("-\tPCK CNT: \t\t %lu\r\n");
+    Serial.printf("-\tNXT PCK: \t\t %lu\r\n");
     CORE1LOCK = false;
     rp2040.resumeOtherCore();
 }
