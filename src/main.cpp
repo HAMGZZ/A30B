@@ -200,7 +200,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             if (Tools::IsNumber(argv[2]))
             {
                 Serial.printf("Setting 0 frequency to: %lld\n\r", strtoull(argv[2], nullptr, 0));
-                settings.ZeroFreq = strtoull(argv[2], nullptr, 0);
+                settings.ZeroFreq = strtoull(argv[2], nullptr, 0) * 100;
             }
             else
             {
@@ -214,7 +214,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             if (Tools::IsNumber(argv[2]))
             {
                 Serial.printf("Setting 1 frequency to: %lld\n\r", strtoull(argv[2], nullptr, 0));
-                settings.OneFreq = strtoull(argv[2], nullptr, 0);
+                settings.OneFreq = strtoull(argv[2], nullptr, 0) * 100;
             }
             else
             {
@@ -589,9 +589,9 @@ void cmdLic(Shell &shell, int argc, const ShellArguments &argv)
 ShellCommand(status, "status -> Gives overall status of the system", cmdStatus);
 
 ShellCommand(set, "set [option] [value] \n\r"
-                  "\t-> '** set zero 1012000000' sets the zero mark to 10.120,000,00 MHz\n\r"
+                  "\t-> '** set zero 10149200' sets the zero mark to 10.120,000 MHz\n\r"
                   "\t                         Please restart the device to apply\n\r"
-                  "\t-> '** set one 1012100000' sets the one mark to 10.121,000,00 MHz\n\r"
+                  "\t-> '** set one 10149400' sets the one mark to 10.121,000 MHz\n\r"
                   "\t                         Please restart the device to apply\n\r"
                   "\t-> 'set callsign *****' sets the callsign - can be up to 7 chars\n\r"
                   "\t-> 'set icon ***' sets the APRS icon to be transmitted\r\n"
@@ -602,7 +602,7 @@ ShellCommand(test, "test [unit] [options] \n\r"
                    "\t-> 'test crc 12345678' returns the CRC-CCITT result from message '12345678'\r\n"
                    "\t-> 'test builder testpacket' returns the build AX25 packet & allows test tx\r\n"
                    "\t-> 'test modulation 10' modulates signal with 1's and 0's being txd for '10' seconds\r\n"
-                   "\t=> 'test baud' test baud rate.",
+                   "\t-> 'test baud' test baud rate.",
              cmdTest);
 
 ShellCommand(calibrate, "calibrate -> calibrate the local oscilator offset", cmdCal);
