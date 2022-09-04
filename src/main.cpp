@@ -270,7 +270,10 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
         // Set the APRS icon
         else if ((strcmp(argv[1], "icon") == 0))
         {
-            strcpy(settings.Icon, argv[2]);
+            if (strlen(argv[2]) > 1)
+                Serial.printf("Symbols are only 1 charecter!\r\nPlease run 'lssymbol' to list symbols\r\n");
+            else
+                strncpy(settings.Icon, argv[2]);
         }
 
         // Set the terminal colour.
@@ -606,6 +609,37 @@ void cmdFormat(Shell &shell, int argc, const ShellArguments &argv)
     Serial.printf(LittleFS.format() ? "OK\r\n" : "ERROR\r\n");
 }
 
+void cmdLssmb(Shell &sehll, int argc, const ShellArguments &argv)
+{
+    Serial.printf(  "S\tDESCRP\t\t\tS\tDESCRP\t\t\tS\tDESCRP\r\n\r\n"
+                    "!\tPolice\t\t\t#\tDigi  \t\t\t$\tPhone \r\n"
+                    "%%\tDX Cls\t\t\t&\tHF Gtw\t\t\t'\tSPlane\r\n"
+                    "(\tSat St\t\t\t*\tSnwMbl\t\t\t+\tRedCrs\r\n"
+                    ",\tBoySct\t\t\t-\tHouse \t\t\t.\tX     \r\n"
+                    ":\tFire  \t\t\t;\tCamp  \t\t\t<\tMtrClc\r\n"
+                    "=\tTrain \t\t\t>\tCar   \t\t\t?\tFilesv\r\n"
+                    "A\tAid St\t\t\tB\tBBS   \t\t\tC\tCanoe \r\n"
+                    "E\tEyebal\t\t\tG\tGrdSqr\t\t\tH\tHotel \r\n"
+                    "I\tTCP/IP\t\t\tK\tSchool\t\t\tM\tMacAPR\r\n"
+                    "N\tNTS St\t\t\tO\tBalln \t\t\tP\tPolice\r\n"
+                    "R\tRec Ve\t\t\tS\tSpcSht\t\t\tT\tSSTV  \r\n"
+                    "U\tBus   \t\t\tV\tATV   \t\t\tW\tNWS St\r\n"
+                    "X\tHlcptr\t\t\tY\tYacht \t\t\tZ\tWINAPR\r\n"
+                    "[\tJogger\t\t\t\\\tTrngl \t\t\t]\tPBBS  \r\n"
+                    "^\tLPlane\t\t\t_\tWthrSt\t\t\t`\tDish  \r\n"
+                    "a\tAmbo  \t\t\tb\tbycl  \t\t\td\tFireSt\r\n"
+                    "e\tHorse \t\t\tf\tFiretr\t\t\tg\tGlider\r\n"
+                    "h\tHospit\t\t\ti\tIOTA  \t\t\tj\tJeep  \r\n"
+                    "k\tTruck \t\t\tm\tMicRep\t\t\tn\tNode  \r\n"
+                    "o\tEmrgOp\t\t\tp\tRover \t\t\tq\tGrdSqr\r\n"
+                    "r\tAnt   \t\t\ts\tShip  \t\t\tt\tTrkStp\r\n"
+                    "u\tTruck \t\t\tv\tVan   \t\t\tw\tWater \r\n"
+                    "x\tX-APRS\t\t\ty\tYagi\r\n"
+                    "There are other symbols available, please lookup the\r\n"
+                    "documentation.\r\n"
+    );
+}
+
 void cmdReady(Shell &shell, int argc, const ShellArguments &argv)
 {
     Serial.printf("OK$\r\n");
@@ -656,7 +690,7 @@ ShellCommand(set, "set [option] [value] \n\r"
                   "\t-> '** set one 10149400' sets the one mark to 10.121,000 MHz\n\r"
                   "\t                         Please restart the device to apply\n\r"
                   "\t-> 'set callsign *****' sets the callsign - can be up to 7 chars\n\r"
-                  "\t-> 'set icon ***' sets the APRS icon to be transmitted\r\n"
+                  "\t-> 'set icon *' sets the APRS icon to be transmitted\r\n"
                   "\t-> 'set colour true/false' sets the shell colour mode",
              cmdSet);
 
@@ -684,6 +718,8 @@ ShellCommand(rmdir, "rmdir [dirname] -> rmdir /deldir", cmdRmdir);
 ShellCommand(put, "put [filename] [data] -> put myFile \"This is what is being placed into file\"", cmdPut);
 
 ShellCommand(format, "format -> Formats the file system - THIS WILL CLEAR CALIBRATION", cmdFormat);
+
+ShellCommand(lssymbol, "lssymbol -> list available symbols", cmdLssmb);
 
 ShellCommand(ready, "ready -> returns ok - ONLY FOR AUTOMATIC CONTROL", cmdReady);
 
