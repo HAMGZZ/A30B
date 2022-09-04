@@ -582,6 +582,11 @@ void cmdFormat(Shell &shell, int argc, const ShellArguments &argv)
     Serial.printf(LittleFS.format() ? "OK\r\n" : "ERROR\r\n");
 }
 
+void cmdReady(Shell &shell, int argc, const ShellArguments &argv)
+{
+    Serial.printf("OK\r\n");
+}
+
 void cmdLic(Shell &shell, int argc, const ShellArguments &argv)
 {
     Serial.printf("MIT License\r\n"
@@ -644,5 +649,7 @@ ShellCommand(rmdir, "rmdir [dirname] -> rmdir /deldir", cmdRmdir);
 ShellCommand(put, "put [filename] [data] -> put myFile \"This is what is being placed into file\"", cmdPut);
 
 ShellCommand(format, "format -> Formats the file system - THIS WILL CLEAR CALIBRATION", cmdFormat);
+
+ShellCommand(ready, "ready -> returns ok - ONLY FOR AUTOMATIC CONTROLL", cmdReady);
 
 ShellCommand(licence, "licence -> show licence", cmdLic);
