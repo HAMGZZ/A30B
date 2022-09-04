@@ -190,7 +190,7 @@ void loop1()
             memset(pack, 0, MAXCHAR);
 
             //Insert all the info into the packet
-            sscanf(pack,   "!%04d.%02d%s/%05d.%02d%s%s%03d/%03d/A=%06d",
+            sscanf(pack,   "!%04d.%02d%s/%05d.%02d%s%s%03d/%03d/A=%06d %s",
                                 gps.location.rawLat().deg,
                                 gps.location.rawLat().billionths,
                                 gps.location.rawLat().negative ? "S" : "N",
@@ -200,7 +200,8 @@ void loop1()
                                 settings.Icon,
                                 gps.course.deg(),
                                 gps.speed.knots(),
-                                gps.altitude.fee());
+                                gps.altitude.fee(),
+                                settings.Comment);
             ax25.buildPacket(pack);
             ax25.shiftOut();
         }
@@ -466,6 +467,25 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
         digitalWrite(TX_EN, 0);
     }
 
+    else if(strcmp(argv[1], "gps") == 0)
+    {
+        char temp[MAXCHAR] = {0};
+        Serial.printf("GPS PACKET:\r\n\r\n");
+        sscanf(temp,   "!%04d.%02d%s/%05d.%02d%s%s%03d/%03d/A=%06d %s",
+                        gps.location.rawLat().deg,
+                        gps.location.rawLat().billionths,
+                        gps.location.rawLat().negative ? "S" : "N",
+                        gps.location.rawLng().deg,
+                        gps.location.rawLng().billionths,
+                        gps.location.rawLng().negative ? "W" : "E",
+                        settings.Icon,
+                        gps.course.deg(),
+                        gps.speed.knots(),
+                        gps.altitude.fee(),
+                        settings.Comment);
+        Serial.printf("%s\r\n\r\n", temp);
+    }
+
     else
     {
         Serial.printf("Error, no test verb.\n\r");
@@ -711,7 +731,8 @@ ShellCommand(test, "test [unit] [options] \n\r"
                    "\t-> 'test crc 12345678' returns the CRC-CCITT result from message '12345678'\r\n"
                    "\t-> 'test builder testpacket' returns the build AX25 packet & allows test tx\r\n"
                    "\t-> 'test modulation 10' modulates signal with 1's and 0's being txd for '10' seconds\r\n"
-                   "\t-> 'test baud' test baud rate.",
+                   "\t-> 'test baud' test baud rate",
+                   "\t-> 'test gps' test gps packet gen"
              cmdTest);
 
 ShellCommand(calibrate, "calibrate -> calibrate the local oscilator offset", cmdCal);
