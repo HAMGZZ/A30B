@@ -320,6 +320,7 @@ void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
     Serial.printf("== DEV CONFG ==\n\r");
     Serial.printf("-\tCallsign:\t\t %s\r\n", settings.Callsign);
     Serial.printf("-\tICON #:  \t\t %s\r\n", settings.Icon);
+    Serial.printf("-\tComment: \t\t %s\t\n", settings.Comment);
     Serial.printf("-\tUpTime:  \t\t %lus > %lum\r\n", (long)(currentTime / 1000), (long)(currentTime / 60000));
     Serial.printf("-\tColour:  \t\t %d\r\n", settings.ShellColour);
     Serial.printf("== GPS STATS ==\r\n");
@@ -328,6 +329,7 @@ void cmdStatus(Shell &shell, int argc, const ShellArguments &argv)
     Serial.printf("-\tTIME:    \t\t %lf cs\r\n", gps.time.centisecond());
     Serial.printf("-\tSPEED:   \t\t %lf km/h\r\n", gps.speed.kmph());
     Serial.printf("-\tALT:     \t\t %lf m\r\n", gps.altitude.meters());
+    Serial.printf("-\tSAT      \t\t %d fixed\r\n", gps.satellites.value());
     Serial.printf("== X25 STATS ==\r\n");
     Serial.printf("-\tPCK CNT: \t\t %lu\r\n");
     Serial.printf("-\tNXT PCK: \t\t %lu\r\n");
