@@ -14,7 +14,7 @@ private:
 public:
 
     char Callsign[CALLSIGN_SIZE];
-    char Icon[ICON_SIZE];
+    char Icon;
     char Comment[COMMENT_SIZE];
     unsigned long long ZeroFreq;
     unsigned long long OneFreq;

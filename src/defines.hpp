@@ -23,7 +23,7 @@
 #define SETTINGS_PATH "/Settings.cfg"
 
 #define DEFAULT_CALL "VKXABC"
-#define DEFAULT_ICON "000"
+#define DEFAULT_ICON '>'
 #define DEFAULT_ZERO_FREQ   1014920000UL // This 10.147.6 USB with 1600/1800 tones
 #define DEFAULT_ONE_FREQ    1014940000UL
 #define DEFAULT_TR 600 // 10 mins

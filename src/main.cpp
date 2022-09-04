@@ -59,6 +59,8 @@ bool CORE1LOCK;
 bool CORE1LOAD;
 bool CORE1READY;
 
+void aprsGen(char * array, unsigned long arraySize);
+
 // Blinks HB light.
 void HeartBeat()
 {
@@ -185,23 +187,7 @@ void loop1()
         if (millis() - prevTime > Tools::delayTime(gps.speed.kmph()) && gps.sentencesWithFix() > 5)
         {
             prevTime = millis();
-
-            // Clear the packet to 0
-            memset(pack, 0, MAXCHAR);
-
-            //Insert all the info into the packet
-            sscanf(pack,   "!%04d.%02d%s/%05d.%02d%s%s%03d/%03d/A=%06d %s",
-                                gps.location.rawLat().deg,
-                                gps.location.rawLat().billionths,
-                                gps.location.rawLat().negative ? "S" : "N",
-                                gps.location.rawLng().deg,
-                                gps.location.rawLng().billionths,
-                                gps.location.rawLng().negative ? "W" : "E",
-                                settings.Icon,
-                                gps.course.deg(),
-                                gps.speed.knots(),
-                                gps.altitude.feet(),
-                                settings.Comment);
+            aprsGen(pack, MAXCHAR);
             ax25.buildPacket(pack);
             ax25.shiftOut();
         }
@@ -211,14 +197,27 @@ void loop1()
 
 
 
+/*****************************************************************************
+ * APRS PACKET GEN
+ *****************************************************************************/
 
-
-
-
-
-
-
-
+void aprsGen(char * array, unsigned long arraySize)
+{
+    memset(array, 0, arraySize);
+    //Insert all the info into the packet
+    sscanf(array,   "!%04d.%02d%c/%05d.%02d%c%c%03d/%03d/A=%06d %s",
+                        gps.location.rawLat().deg,
+                        gps.location.rawLat().billionths,
+                        gps.location.rawLat().negative ? 'S' : 'N',
+                        gps.location.rawLng().deg,
+                        gps.location.rawLng().billionths,
+                        gps.location.rawLng().negative ? 'W' : 'E',
+                        settings.Icon,
+                        gps.course.deg(),
+                        gps.speed.knots(),
+                        gps.altitude.feet(),
+                        settings.Comment);
+}
 
 
 
@@ -277,7 +276,7 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
             if (strlen(argv[2]) > 1)
                 Serial.printf("Warning: Symbols are only 1 character!\r\nPlease run 'lssymbol' to list symbols\r\n");
             else
-                strcpy(settings.Icon, argv[2]);
+                settings.Icon = argv[2][0];
         }
 
         else if (strcmp(argv[1], "comment") == 0)
@@ -471,18 +470,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
     {
         char temp[MAXCHAR] = {0};
         Serial.printf("GPS PACKET:\r\n\r\n");
-        sscanf(temp,   "!%04d.%02d%s/%05d.%02d%s%s%03d/%03d/A=%06d %s",
-                        gps.location.rawLat().deg,
-                        gps.location.rawLat().billionths,
-                        gps.location.rawLat().negative ? "S" : "N",
-                        gps.location.rawLng().deg,
-                        gps.location.rawLng().billionths,
-                        gps.location.rawLng().negative ? "W" : "E",
-                        settings.Icon,
-                        gps.course.deg(),
-                        gps.speed.knots(),
-                        gps.altitude.feet(),
-                        settings.Comment);
+        aprsGen(temp, MAXCHAR);
         Serial.printf("%s\r\n\r\n", temp);
     }
 
@@ -634,6 +622,15 @@ void cmdRmdir(Shell &shell, int argc, const ShellArguments &argv)
 
 void cmdPut(Shell &shell, int argc, const ShellArguments &argv)
 {
+    if (argc > 1)
+    {
+        fs:File file = LittleFS.open(argv[1], "a");
+        file.printf("%s\r\n", argv[2]);
+    }
+    else
+    {
+        Serial.printf("Missing file name.\r\n");
+    }
 }
 
 void cmdFormat(Shell &shell, int argc, const ShellArguments &argv)

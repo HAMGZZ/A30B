@@ -8,7 +8,7 @@ int Settings::Init()
         Serial.printf("\b\bWARNING]\r\n");
         Serial.printf("Error reading file... Using defaults!\r\n");
         strcpy(Callsign, DEFAULT_CALL);
-        strcpy(Icon, DEFAULT_ICON);
+        Icon = DEFAULT_ICON;
         ZeroFreq = DEFAULT_ZERO_FREQ;
         OneFreq = DEFAULT_ONE_FREQ;
         BaudRate = DEFAULT_BAUD;
