@@ -290,9 +290,9 @@ void cmdSet(Shell &shell, int argc, const ShellArguments &argv)
         // Set the terminal colour.
         else if (strcmp(argv[1], "colour") == 0)
         {
-            if ((strcmp(argv[2], "true") == 0))
+            if (strcmp(argv[2], "true") == 0)
                 settings.ShellColour = 1;
-            else if ((strcmp(argv[2], "false") == 0))
+            else if (strcmp(argv[2], "false") == 0)
                 settings.ShellColour = 0;
             else
                 Serial.printf("Only use true or false.\r\n");
