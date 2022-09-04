@@ -499,14 +499,49 @@ void cmdCal(Shell &shell, int argc, const ShellArguments &argv)
     Serial.printf("Setting output of sigen to 10MHz\r\n");
     rf.set_freq(100000000, SI5351_CLK0);
     Serial.printf("Please connect the output to a frequency counter.\r\n");
-    Serial.printf("Please enter in 0.01Hz accuracy. E.g. 10MHz = 1000000000\r\n");
-    Serial.printf("FREQUENCY READING => ");
-    
+    Serial.printf("Adjust until the frequency counter reads 10MHz\r\n");
+    Serial.printf("Else, press z to enter the frequency manually\r\n\r\n");
+    Serial.printf("Press 'q' when done\r\n");
+    Serial.printf("   Up:   r   t  y  u  i   o  p\r\n");
+    Serial.printf(" Down:   f   g  h  j  k   l  ;\r\n");
+    Serial.printf("   Hz: 0.01 0.1 1 10 100 1K 10k\r\n\r\n");
+
     while (run)
     {
         if (Serial.available())
         {
             a = Serial.read();
+            switch (a)
+            {
+            case 'q':
+                Serial.printf("Offset: %ll\r\n");
+            case 'r': offset += 1; break;
+            case 'f': offset -= 1; break;
+            case 't': offset += 10; break;
+            case 'g': offset -= 10; break;
+            case 'y': offset += 100; break;
+            case 'h': offset -= 100; break;
+            case 'u': offset += 1000; break;
+            case 'j': offset -= 1000; break;
+            case 'i': offset += 10000; break;
+            case 'k': offset -= 10000; break;
+            case 'o': offset += 100000; break;
+            case 'l': offset -= 100000; break;
+            case 'p': offset += 1000000; break;
+            case ';': offset -= 1000000; break;
+            default:
+                break;
+            }
+            Serial.printf()
+        }
+    }
+
+    while (run)
+    {
+        if (Serial.available())
+        {
+            a = Serial.read();
+            Serial.printf("%c", a);
             if (a == '\r' || a == '\n' || a == ' ')
                 run = false;
             else 
