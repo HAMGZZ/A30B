@@ -4,7 +4,7 @@
 #define VERSION 0.1
 #define PROG_NAME "A30B"
 
-#define MAXCHAR 500
+#define MAXCHAR 2048
 #define I2C_SDA 0
 #define I2C_SCL 1
 #define UART_TX 28

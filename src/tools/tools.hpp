@@ -94,6 +94,11 @@ public:
             }
         }
     }
+
+    static float delayTime(float speed)
+    {
+        return 4800/speed;
+    }
 };
 
 #endif

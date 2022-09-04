@@ -174,12 +174,36 @@ void setup1()
 // TODO: IMPLEMENT THIS!
 void loop1()
 {
+    unsigned long prevTime = 0;
+    char pack[MAXCHAR] = {0};
     // CORE 1 LOOP LOCK 
     while (!CORE1LOCK)
     {
         while (Serial1.available() > 0)
             gps.encode(Serial1.read());
         delay(50);
+        if (millis() - prevTime > Tools::delayTime(gps.speed.kmph()))
+        {
+            prevTime = millis();
+
+            // Clear the packet to 0
+            memset(pack, 0, MAXCHAR);
+
+            //Insert all the info into the packet
+            sscanf(pack,   "!%04d.%02d%s/%05d.%02d%s%s%03d/%03d/A=%06d",
+                                gps.location.rawLat().deg,
+                                gps.location.rawLat().billionths,
+                                gps.location.rawLat().negative ? "S" : "N",
+                                gps.location.rawLng().deg,
+                                gps.location.rawLng().billionths,
+                                gps.location.rawLng().negative ? "W" : "E",
+                                settings.Icon,
+                                gps.course.deg(),
+                                gps.speed.knots(),
+                                gps.altitude.fee());
+            ax25.buildPacket(pack);
+            ax25.shiftOut();
+        }
     }
 }
 
