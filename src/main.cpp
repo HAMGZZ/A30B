@@ -182,7 +182,7 @@ void loop1()
         while (Serial1.available() > 0)
             gps.encode(Serial1.read());
         delay(50);
-        if (millis() - prevTime > Tools::delayTime(gps.speed.kmph()))
+        if (millis() - prevTime > Tools::delayTime(gps.speed.kmph()) && gps.sentencesWithFix() > 5)
         {
             prevTime = millis();
 
