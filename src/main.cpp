@@ -444,7 +444,7 @@ void cmdTest(Shell &shell, int argc, const ShellArguments &argv)
     {
         float symbolTime = (1/(float)settings.BaudRate) * 1000;
         bool run = true;       
-        unsigned long long db = 10000000/settings.BaudRate;
+        unsigned long long db = 1000000/settings.BaudRate;
         int out = 0;   
         Serial.printf("Current baud rate: %lu\r\n", settings.BaudRate);
         Serial.printf("The symbol time should be: %f mS\r\n", symbolTime);
@@ -489,6 +489,7 @@ void cmdCal(Shell &shell, int argc, const ShellArguments &argv)
     CORE1LOCK = true;
     rp2040.idleOtherCore();
     bool run = true;
+    bool manual = false;
     char a;
     char in[MAXCHAR] = {0};
     long long inFreq = 0;
@@ -529,50 +530,53 @@ void cmdCal(Shell &shell, int argc, const ShellArguments &argv)
             case 'l': offset -= 100000; break;
             case 'p': offset += 1000000; break;
             case ';': offset -= 1000000; break;
+            case 'z': manual = true; run = false; break;
             default:
                 break;
             }
-            Serial.printf()
         }
     }
-
-    while (run)
+    if (manual)
     {
-        if (Serial.available())
-        {
-            a = Serial.read();
-            Serial.printf("%c", a);
-            if (a == '\r' || a == '\n' || a == ' ')
-                run = false;
-            else 
-                in[strlen(in)] = a;
-        }
-    }
-    inFreq = strtoll(in, nullptr, 0) * 100ULL;
-    offset = inFreq - 1000000000ULL;
-    Serial.printf("Entered frequency: %llu\r\n", inFreq);
-    Serial.printf("Offset: %llu\r\n", offset);
-    Serial.printf("Is this offset ok? (y/n): ");
-    run = true;
-    while (run)
-    {
-        if (Serial.available())
-        {
-            if (Serial.read() == 'y' || Serial.read() == 'Y')
-            {
-                settings.Offset = offset;
-                Serial.printf("Saving calibration...\r\n");
-                settings.Write();
-                Serial.printf("Calibration saved. Please power cycle the device!\r\n");
-                delay(2000);
-                for(;;);
-            }
-            else
-            {
-                Serial.printf("Cancled\r\n");
-                run = false;
-            }
-        }
+      run = true;
+      while (run)
+      {
+          if (Serial.available())
+          {
+              a = Serial.read();
+              Serial.printf("%c", a);
+              if (a == '\r' || a == '\n' || a == ' ')
+                  run = false;
+              else 
+                  in[strlen(in)] = a;
+          }
+      }
+      inFreq = strtoll(in, nullptr, 0) * 100ULL;
+      offset = inFreq - 1000000000ULL;
+      Serial.printf("Entered frequency: %llu\r\n", inFreq);
+      Serial.printf("Offset: %llu\r\n", offset);
+      Serial.printf("Is this offset ok? (y/n): ");
+      run = true;
+      while (run)
+      {
+          if (Serial.available())
+          {
+              if (Serial.read() == 'y' || Serial.read() == 'Y')
+              {
+                  settings.Offset = offset;
+                  Serial.printf("Saving calibration...\r\n");
+                  settings.Write();
+                  Serial.printf("Calibration saved. Please power cycle the device!\r\n");
+                  delay(2000);
+                  for(;;);
+              }
+              else
+              {
+                  Serial.printf("Cancled\r\n");
+                  run = false;
+              }
+          }
+      }
     }
 }
 

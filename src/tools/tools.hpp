@@ -97,7 +97,7 @@ public:
 
     static float delayTime(float speed)
     {
-        return 4800/speed;
+        return 9600/speed;
     }
 };
 
